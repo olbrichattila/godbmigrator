@@ -1,6 +1,9 @@
 package migrator
 
-import "fmt"
+import (
+	"database/sql"
+	"fmt"
+)
 
 type MigrationProvider interface {
 	LatestMigrations() []string
@@ -9,10 +12,12 @@ type MigrationProvider interface {
 	MigrationExistsForFile(string) bool
 }
 
-func NewMigrationProvider(providerType string) (MigrationProvider, error) {
+func NewMigrationProvider(providerType string, db *sql.DB) (MigrationProvider, error) {
 	switch providerType {
 	case "json":
 		return newJsonMigration(), nil
+	case "db":
+		return newDbMigration(db), nil
 	default:
 		return nil, fmt.Errorf("Invalid migration provider type: %s", providerType)
 	}

@@ -20,7 +20,8 @@ func main() {
 		return
 	}
 
-	migrationProvider, err := migrator.NewMigrationProvider("json")
+	// migrationProvider, err := migrator.NewMigrationProvider("json", nil)
+	migrationProvider, err := migrator.NewMigrationProvider("db", db)
 	if err != nil {
 		panic("Error: " + err.Error())
 	}

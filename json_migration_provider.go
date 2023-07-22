@@ -13,11 +13,14 @@ type JsonMigration struct {
 }
 
 func newJsonMigration() *JsonMigration {
-	return &JsonMigration{}
+	timeString := time.Now().Format("2006-01-02 15:04:05")
+	jsonMigration := &JsonMigration{timeString: timeString}
+	jsonMigration.loadMigrationFile()
+
+	return jsonMigration
 }
 
 func (m *JsonMigration) LatestMigrations() []string {
-	m.loadMigrationFile()
 	var latestDate string
 	var filtered []string
 
@@ -39,7 +42,6 @@ func (m *JsonMigration) LatestMigrations() []string {
 }
 
 func (m *JsonMigration) loadMigrationFile() error {
-	m.timeString = time.Now().Format("2006-01-02 15:04:05")
 	m.data = make(map[string]string)
 	jsonData, err := ioutil.ReadFile(migragionJsonFileName)
 	if err != nil {
@@ -64,9 +66,6 @@ func (m *JsonMigration) saveMigrationFile() error {
 }
 
 func (m *JsonMigration) AddToMigration(fileName string) error {
-	if len(m.data) == 0 {
-		m.loadMigrationFile()
-	}
 	m.data[fileName] = m.timeString
 
 	return m.saveMigrationFile()

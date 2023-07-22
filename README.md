@@ -48,8 +48,15 @@ You need to have a DB connection, and a migration provider.
 
 The migration provider stores the migration status to:
 - json
-- database (under implementation)
+- database
 - (others to come)
+
+
+Currently the command line utility supports only SqLite, the build in solution shoud work, but not tested with oher datahases
+
+Soon coming:
+- MySql
+- Postgresql
 
 ## Example migrate: (where the db is your *sql.DB)
 
@@ -67,7 +74,7 @@ if err != nil {
 
 ## Example rollback: (where the db is your *sql.DB)
 ```
-migrationProvider, err := migrator.NewMigrationProvider("json")
+migrationProvider, err := migrator.NewMigrationProvider("json", nil)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -76,6 +83,43 @@ err = migrator.Rollback(db, migrationProvider, count)
 if err != nil {
     panic("Error: " + err.Error())
 }
+```
+
+## Migrate With database provider
+```
+db, err := migrator.NewSqliteStore("./data/database.sqlite")
+if err != nil {
+    panic("Error: " + err.Error())
+}
+
+migrationProvider, err := migrator.NewMigrationProvider("db", db)
+if err != nil {
+    panic("Error: " + err.Error())
+}
+
+err = migrator.Migrate(db, migrationProvider, count)
+if err != nil {
+    panic("Error: " + err.Error())
+}
+```
+
+## Rollback With database provider
+```
+db, err := migrator.NewSqliteStore("./data/database.sqlite")
+if err != nil {
+    panic("Error: " + err.Error())
+}
+
+migrationProvider, err := migrator.NewMigrationProvider("db", db)
+if err != nil {
+    panic("Error: " + err.Error())
+}
+
+err = migrator.Rollback(db, migrationProvider, count)
+if err != nil {
+    panic("Error: " + err.Error())
+}
+
 ```
 
 ## Available make targets:
