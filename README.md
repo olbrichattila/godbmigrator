@@ -85,3 +85,7 @@ mage migrate
 make rollback
 make install
 ```
+## Coming soon
+
+.env where you can define the database connection. migration file paths and migration provider type therefore it can be used as a full featured command line migrator.
+
