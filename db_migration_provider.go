@@ -26,13 +26,11 @@ func (m *DbMigration) LatestMigrations() []string {
 	lastMigrationDate := m.lastMigrationDate()
 
 	rows, err := m.db.Query(`
-		SELECT
-			file_name 
-		FROM
-			migrations
-		WHERE
-			deleted_at is null
-			AND created_at = $1
+		SELECT file_name 
+		FROM migrations
+		WHERE deleted_at is null
+		AND created_at = $1
+		ORDER BY file_name DESC
 	`, lastMigrationDate)
 
 	if err != nil {
@@ -54,11 +52,9 @@ func (m *DbMigration) LatestMigrations() []string {
 }
 
 func (m *DbMigration) AddToMigration(fileName string) error {
-	sql := `INSERT INTO
-				migrations 
+	sql := `INSERT INTO migrations  
 			(file_name, created_at)
-				values 
-			($1, $2)`
+			VALUES ($1, $2)`
 
 	_, err := m.db.Exec(sql, fileName, m.timeString)
 
@@ -67,13 +63,10 @@ func (m *DbMigration) AddToMigration(fileName string) error {
 }
 
 func (m *DbMigration) RemoveFromMigration(fileName string) error {
-	sql := `UPDATE
-				migrations 
-			SET
-				deleted_at = $1
-			WHERE
-				file_name = $2
-				AND deleted_at IS NULL`
+	sql := `UPDATE migrations 
+			SET deleted_at = $1
+			WHERE file_name = $2
+			AND deleted_at IS NULL`
 
 	_, err := m.db.Exec(sql, m.timeString, fileName)
 
@@ -81,14 +74,10 @@ func (m *DbMigration) RemoveFromMigration(fileName string) error {
 }
 
 func (m *DbMigration) MigrationExistsForFile(fileName string) bool {
-	sql := `SELECT
-				count(*) as cnt
-			FROM
-				migrations
-			WHERE
-				file_name = $2
-			AND
-				deleted_at is null`
+	sql := `SELECT count(*) as cnt
+			FROM migrations
+			WHERE file_name = $2
+			AND deleted_at IS NULL`
 
 	row := m.db.QueryRow(sql, fileName)
 	var count string
@@ -115,12 +104,9 @@ func (m *DbMigration) Init() error {
 }
 
 func (m *DbMigration) lastMigrationDate() string {
-	sql := `SELECT
-				max(created_at) as latest_migration
-			FROM
-				migrations
-			WHERE
-				deleted_at is null`
+	sql := `SELECT max(created_at) as latest_migration
+			FROM migrations
+			WHERE deleted_at IS NULL`
 
 	row := m.db.QueryRow(sql)
 	var maxdate string
