@@ -2,11 +2,12 @@
 
 !!Under development...
 
-## Create migration SQL files into the the folder migratrions (will be configurable)
+## Create migration SQL files into the the folder migrations (will be configurable)
 
 Follow the structure:
 [id]-migrate-[custom-content].sql
 
+The files will be processed in ascending order, therefore it is important to create an id as follows:
 For example:
 ```
 0001-migrate.sql
