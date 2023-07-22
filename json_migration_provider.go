@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+const migragionJsonFileName = "./migrations/migrations.json"
+
 type JsonMigration struct {
 	data       map[string]string
 	timeString string

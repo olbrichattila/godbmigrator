@@ -4,6 +4,18 @@
 
 ## Create migration SQL files into the the folder migrations (will be configurable)
 
+## What is the provider?
+
+Currently it supports two type of migration provider, json and database.
+This is the way the migrator knows which migration was executed and when.
+
+If the json provider is used, then a json file will be saved next to the migration files:
+```./migrations/migrations.json```
+
+If the db provider is user, then a migrations table will be created in the same database where you are migrating to.
+
+## Migration file structure
+
 Follow the structure:
 [id]-migrate-[custom-content].sql
 
@@ -74,9 +86,9 @@ The migration provider stores the migration status to:
 - (others to come)
 
 
-Currently the command line utility supports only SqLite, the build in solution shoud work, but not tested with oher datahases
+Currently the command line utility supports only SqLite, the build in solution shoud work, but not tested with oher databases
 
-Soon coming:
+Coming soon:
 - MySql
 - Postgresql
 

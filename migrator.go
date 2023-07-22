@@ -10,10 +10,9 @@ import (
 )
 
 const (
-	migrationFolder       = "./migrations"
-	migragionJsonFileName = "./migrations/migrations.json"
-	migrationFileRegex    = "^.*migrate.*\\.sql$"
-	rollbackReplaceRegex  = "migrate"
+	migrationFolder      = "./migrations"
+	migrationFileRegex   = "^.*migrate.*\\.sql$"
+	rollbackReplaceRegex = "migrate"
 )
 
 type migration struct {
