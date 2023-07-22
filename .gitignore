@@ -39,3 +39,6 @@
 # (use the comment below if you use Visual Studio Code)
 .vscode/
 .env
+/migrations/
+/data/
+/build/
