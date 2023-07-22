@@ -2,6 +2,27 @@
 
 !!Under development...
 
+## Create migration SQL files into the the folder migratrions (will be configurable)
+
+Follow the structure:
+[id]-migrate-[custom-content].sql
+
+For example:
+```
+0001-migrate.sql
+0001-rollback.sql
+0002-migrate.sql
+0002-rollback.sql
+0003-migrate.sql
+0003-rollback.sql
+0004-migrate.sql
+0004-rollback.sql
+0005-migrate-new.sql
+0005-rollback-new.sql
+0006-migrate-new.sql
+0006-rollback-new.sql
+```
+
 ## Command line usage:
 
 # Without building the app
