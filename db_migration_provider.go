@@ -54,7 +54,6 @@ func (m *DbMigration) LatestMigrations() []string {
 }
 
 func (m *DbMigration) AddToMigration(fileName string) error {
-
 	sql := `INSERT INTO
 				migrations 
 			(file_name, created_at)
