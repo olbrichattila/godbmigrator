@@ -216,6 +216,13 @@ mage migrate
 make rollback
 make install
 ```
+## Switch .env file with boilerplate setup for the followin database connections
+```
+switch-sqlite:
+switch-mysql:
+switch-pgsql:
+	
+```
 ## Coming soon
 
 .env where you can define the database connection. migration file paths and migration provider type therefore it can be used as a full featured command line migrator.
