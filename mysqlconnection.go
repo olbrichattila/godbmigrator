@@ -7,12 +7,19 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func NewMysqlStore(user, dbname, password string) (*sql.DB, error) {
-	// @todo add host
+func NewMysqlStore(
+	host string,
+	port int,
+	user,
+	password,
+	dbname string,
+) (*sql.DB, error) {
 	connStr := fmt.Sprintf(
-		"%s:%s@tcp(localhost:3306)/%s",
+		"%s:%s@tcp(%s:%d)/%s",
 		user,
 		password,
+		host,
+		port,
 		dbname)
 
 	db, err := sql.Open("mysql", connStr)

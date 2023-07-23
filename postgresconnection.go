@@ -7,13 +7,32 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func NewPostgresStore(user, dbname, password string) (*sql.DB, error) {
-	// @TODO pramaeterize sslmode, add host and port
+const (
+	PgSslModeDisable    = "disable"
+	PgSslModeRequire    = "require"
+	PgSslModeVerifyCa   = "verify-ca"
+	PgSslModeVerifyFull = "verify-full"
+	PgSslModePrefer     = "prefer"
+	PgSslModeAllow      = "allow"
+)
+
+func NewPostgresStore(
+	host string,
+	port int,
+	user,
+	password,
+	dbname,
+	sslmode string,
+) (*sql.DB, error) {
 	connStr := fmt.Sprintf(
-		"user=%s dbname=%s password=%s sslmode=disable",
+		"postgres://%s:%s@%s:%d/%s?sslmode=%s",
 		user,
+		password,
+		host,
+		port,
 		dbname,
-		password)
+		sslmode,
+	)
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
