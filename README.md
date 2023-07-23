@@ -46,6 +46,10 @@ Migrate:
 Rollback:
 ```go run cmd/cmd.go rollback```
 
+Adding new migratio and rollack file:
+``````go run cmd/cmd.go add <your custom message>``````
+Note: the custom message is not mandatory, in that case the file will be a standard format, like date_time-migration.sql
+
 ### Migrate or rollback specified amount of migrations (like 2)
 
 Migrate:
