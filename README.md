@@ -229,7 +229,6 @@ make install
 switch-sqlite:
 switch-mysql:
 switch-pgsql:
-	
 ```
 ## Coming soon
 
