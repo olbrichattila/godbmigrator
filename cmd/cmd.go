@@ -10,8 +10,8 @@ import (
 
 func main() {
 	// db, err := migrator.NewSqliteStore("./data/database.sqlite")
-	db, err := migrator.NewPostgresStore("postgres", "postgres", "postgres")
-
+	// db, err := migrator.NewPostgresStore("postgres", "postgres", "postgres")
+	db, err := migrator.NewMysqlStore("root", "migrator", "H8E7kU8Y")
 	if err != nil {
 		panic("Error: " + err.Error())
 	}

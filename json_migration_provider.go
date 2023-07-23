@@ -22,7 +22,7 @@ func newJsonMigration() *JsonMigration {
 	return jsonMigration
 }
 
-func (m *JsonMigration) LatestMigrations() []string {
+func (m *JsonMigration) LatestMigrations() ([]string, error) {
 	var latestDate string
 	var filtered []string
 
@@ -40,7 +40,7 @@ func (m *JsonMigration) LatestMigrations() []string {
 
 	sort.Sort(sort.Reverse(sort.StringSlice(filtered)))
 
-	return filtered
+	return filtered, nil
 }
 
 func (m *JsonMigration) loadMigrationFile() error {

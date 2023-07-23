@@ -15,16 +15,16 @@ type PostgresMigrationTableSqlProvider struct {
 type MySqlMigrationTableSqlProvider struct {
 }
 
-func MigrationTableProviderByDriverName(driverName string) MigrationTableSqlProvider {
+func MigrationTableProviderByDriverName(driverName string) (MigrationTableSqlProvider, error) {
 	switch driverName {
-	case "*sqlite3.SQLiteDriver":
-		return &SqliteMigrationTableSqlProvider{}
-	case "*pq.Driver":
-		return &PostgresMigrationTableSqlProvider{}
+	case "sqlite":
+		return &SqliteMigrationTableSqlProvider{}, nil
+	case "pq":
+		return &PostgresMigrationTableSqlProvider{}, nil
 	case "mysql":
-		return &MySqlMigrationTableSqlProvider{}
+		return &MySqlMigrationTableSqlProvider{}, nil
 	default:
-		panic(fmt.Sprintf("Provider %s does not exists", driverName))
+		return nil, fmt.Errorf("Provider %s does not exists", driverName)
 	}
 }
 

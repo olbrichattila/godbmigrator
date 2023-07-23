@@ -25,9 +25,13 @@ func newMigrator(db *sql.DB) *migration {
 }
 
 func Rollback(db *sql.DB, migrationProvider MigrationProvider, count int) error {
+	var err error
 	m := newMigrator(db)
 	m.migrationProvider = migrationProvider
-	latestMigrations := m.migrationProvider.LatestMigrations()
+	latestMigrations, err := m.migrationProvider.LatestMigrations()
+	if err != nil {
+		return err
+	}
 	if len(latestMigrations) == 0 {
 		fmt.Println("Nothing to rollback")
 		return nil
@@ -42,7 +46,7 @@ func Rollback(db *sql.DB, migrationProvider MigrationProvider, count int) error 
 
 		}
 
-		err := m.executeRollbackSqlFile(fileName)
+		err = m.executeRollbackSqlFile(fileName)
 		if err != nil {
 			return err
 		}
@@ -116,7 +120,10 @@ func (m *migration) executeSqlFile(fileName string) (bool, error) {
 
 	err = m.executeSql(string(content))
 	if err == nil {
-		m.migrationProvider.AddToMigration(fileName)
+		err = m.migrationProvider.AddToMigration(fileName)
+		if err != nil {
+			return false, err
+		}
 	}
 
 	return true, err

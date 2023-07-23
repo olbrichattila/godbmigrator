@@ -2,40 +2,54 @@ package migrator
 
 import (
 	"database/sql"
+	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 )
 
 type DbMigration struct {
-	db         *sql.DB
-	timeString string
+	db                  *sql.DB
+	timeString          string
+	sqlBindingParameter string
 }
 
-func newDbMigration(db *sql.DB) *DbMigration {
+func newDbMigration(db *sql.DB) (*DbMigration, error) {
 	timeString := time.Now().Format("2006-01-02 15:04:05")
 	dbMigration := &DbMigration{db: db, timeString: timeString}
-	err := dbMigration.Init()
+	driverType, err := dbMigration.diverType()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return dbMigration
+	dbMigration.setSqlBindingParameter(driverType)
+	createSqlProvider, err := MigrationTableProviderByDriverName(driverType)
+	if err != nil {
+		return nil, err
+	}
+
+	err = dbMigration.Init(createSqlProvider)
+	if err != nil {
+		return nil, err
+	}
+	return dbMigration, nil
 }
 
-func (m *DbMigration) LatestMigrations() []string {
+func (m *DbMigration) LatestMigrations() ([]string, error) {
 	var migrationList []string
 	lastMigrationDate := m.lastMigrationDate()
 
-	rows, err := m.db.Query(`
-		SELECT file_name 
-		FROM migrations
-		WHERE deleted_at is null
-		AND created_at = $1
-		ORDER BY file_name DESC
-	`, lastMigrationDate)
+	rows, err := m.db.Query(fmt.Sprintf(
+		`SELECT file_name 
+		 FROM migrations
+		 WHERE created_at = %s 
+		 AND deleted_at IS NULL
+		 ORDER BY file_name DESC`,
+		m.getBindingParameter(1),
+	), lastMigrationDate)
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	defer rows.Close()
@@ -49,13 +63,16 @@ func (m *DbMigration) LatestMigrations() []string {
 
 	}
 
-	return migrationList
+	return migrationList, nil
 }
 
 func (m *DbMigration) AddToMigration(fileName string) error {
-	sql := `INSERT INTO migrations  
+	sql := fmt.Sprintf(`INSERT INTO migrations  
 			(file_name, created_at)
-			VALUES ($1, $2)`
+			VALUES (%s, %s)`,
+		m.getBindingParameter(1),
+		m.getBindingParameter(2),
+	)
 
 	_, err := m.db.Exec(sql, fileName, m.timeString)
 
@@ -64,10 +81,13 @@ func (m *DbMigration) AddToMigration(fileName string) error {
 }
 
 func (m *DbMigration) RemoveFromMigration(fileName string) error {
-	sql := `UPDATE migrations 
-			SET deleted_at = $1
-			WHERE file_name = $2
-			AND deleted_at IS NULL`
+	sql := fmt.Sprintf(`UPDATE migrations 
+			SET deleted_at = %s
+			WHERE file_name = %s
+			AND deleted_at IS NULL`,
+		m.getBindingParameter(1),
+		m.getBindingParameter(2),
+	)
 
 	_, err := m.db.Exec(sql, m.timeString, fileName)
 
@@ -75,10 +95,12 @@ func (m *DbMigration) RemoveFromMigration(fileName string) error {
 }
 
 func (m *DbMigration) MigrationExistsForFile(fileName string) bool {
-	sql := `SELECT count(*) as cnt
+	sql := fmt.Sprintf(`SELECT count(*) as cnt
 			FROM migrations
-			WHERE file_name = $1
-			AND deleted_at IS NULL`
+			WHERE file_name = %s
+			AND deleted_at IS NULL`,
+		m.getBindingParameter(1),
+	)
 
 	row := m.db.QueryRow(sql, fileName)
 
@@ -94,9 +116,7 @@ func (m *DbMigration) MigrationExistsForFile(fileName string) bool {
 	return cnt > 0
 }
 
-func (m *DbMigration) Init() error {
-	driverType := reflect.TypeOf(m.db.Driver()).String()
-	createSqlProvider := MigrationTableProviderByDriverName(driverType)
+func (m *DbMigration) Init(createSqlProvider MigrationTableSqlProvider) error {
 	sql := createSqlProvider.CreateSql()
 
 	_, err := m.db.Exec(sql)
@@ -114,4 +134,40 @@ func (m *DbMigration) lastMigrationDate() string {
 	row.Scan(&maxdate)
 
 	return maxdate
+}
+
+func (m *DbMigration) setSqlBindingParameter(driverType string) {
+	if driverType == "pq" {
+		m.sqlBindingParameter = "$1"
+
+		return
+	}
+
+	m.sqlBindingParameter = "?"
+}
+
+func (m *DbMigration) getBindingParameter(index int) string {
+	if m.sqlBindingParameter == "?" {
+		return "?"
+	}
+
+	return fmt.Sprintf("$%d", index)
+}
+
+func (m *DbMigration) diverType() (string, error) {
+	driverType := reflect.TypeOf(m.db.Driver()).String()
+
+	if strings.Contains(driverType, "mysql") {
+		return "mysql", nil
+	}
+
+	if strings.Contains(driverType, "pg") || strings.Contains(driverType, "postgres") {
+		return "pg", nil
+	}
+
+	if strings.Contains(driverType, "sqlite") {
+		return "sqlite", nil
+	}
+
+	return "", fmt.Errorf("The driver used %s does not match any known dirver by the application", driverType)
 }

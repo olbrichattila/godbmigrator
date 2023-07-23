@@ -6,7 +6,7 @@ import (
 )
 
 type MigrationProvider interface {
-	LatestMigrations() []string
+	LatestMigrations() ([]string, error)
 	AddToMigration(string) error
 	RemoveFromMigration(string) error
 	MigrationExistsForFile(string) bool
@@ -17,7 +17,11 @@ func NewMigrationProvider(providerType string, db *sql.DB) (MigrationProvider, e
 	case "json":
 		return newJsonMigration(), nil
 	case "db":
-		return newDbMigration(db), nil
+		dbMigration, err := newDbMigration(db)
+		if err != nil {
+			return nil, err
+		}
+		return dbMigration, nil
 	default:
 		return nil, fmt.Errorf("Invalid migration provider type: %s", providerType)
 	}
