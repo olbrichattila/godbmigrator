@@ -9,7 +9,9 @@ import (
 )
 
 func main() {
-	db, err := migrator.NewSqliteStore("./data/database.sqlite")
+	// db, err := migrator.NewSqliteStore("./data/database.sqlite")
+	db, err := migrator.NewPostgresStore("postgres", "postgres", "postgres")
+
 	if err != nil {
 		panic("Error: " + err.Error())
 	}

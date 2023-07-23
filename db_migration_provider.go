@@ -2,6 +2,7 @@ package migrator
 
 import (
 	"database/sql"
+	"reflect"
 	"strconv"
 	"time"
 )
@@ -76,14 +77,16 @@ func (m *DbMigration) RemoveFromMigration(fileName string) error {
 func (m *DbMigration) MigrationExistsForFile(fileName string) bool {
 	sql := `SELECT count(*) as cnt
 			FROM migrations
-			WHERE file_name = $2
+			WHERE file_name = $1
 			AND deleted_at IS NULL`
 
 	row := m.db.QueryRow(sql, fileName)
+
 	var count string
 	row.Scan(&count)
 
 	cnt, err := strconv.Atoi(count)
+
 	if err != nil {
 		return false
 	}
@@ -92,11 +95,9 @@ func (m *DbMigration) MigrationExistsForFile(fileName string) bool {
 }
 
 func (m *DbMigration) Init() error {
-	sql := `CREATE TABLE IF NOT EXISTS migrations (
-				file_name VARCHAR(255),
-				created_at VARCHAR(20),
-				deleted_at VARCHAR(20)
-			)`
+	driverType := reflect.TypeOf(m.db.Driver()).String()
+	createSqlProvider := MigrationTableProviderByDriverName(driverType)
+	sql := createSqlProvider.CreateSql()
 
 	_, err := m.db.Exec(sql)
 
