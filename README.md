@@ -208,7 +208,7 @@ if err != nil {
 }
 ```
 
-## Example, create new migratin file:
+## Example, create new migration file:
 (same as ``````go run cmd/cmd.go add <your custom message>``````)
 ```
 err := migrator.AddNewMigrationFiles(secondParameter)
