@@ -13,10 +13,11 @@ func main() {
 	// db, err := migrator.NewPostgresStore("localhost", 5432, "postgres", "postgres", "postgres", migrator.PgSslModeDisable)
 	db, err := migrator.NewMysqlStore("localhost", 3306, "root", "H8E7kU8Y", "migrator")
 	if err != nil {
-		panic("Error: " + err.Error())
+		fmt.Println("Error: " + err.Error())
+		return
 	}
 
-	commandLineParameter, count, err := commandLineParameters()
+	commandLineParameter, secondParameter, err := commandLineParameters()
 	if err != nil {
 		printUsage()
 		return
@@ -25,40 +26,67 @@ func main() {
 	// migrationProvider, err := migrator.NewMigrationProvider("json", nil)
 	migrationProvider, err := migrator.NewMigrationProvider("db", db)
 	if err != nil {
-		panic("Error: " + err.Error())
+		fmt.Println("Error: " + err.Error())
+		return
 	}
 
 	switch commandLineParameter {
 	case "migrate":
+		count, err := getCount(secondParameter)
+		if err != nil {
+			fmt.Println("Error: " + err.Error())
+			return
+		}
 		err = migrator.Migrate(db, migrationProvider, count)
 		if err != nil {
-			panic("Error: " + err.Error())
+			fmt.Println("Error: " + err.Error())
+			return
 		}
 	case "rollback":
+		count, err := getCount(secondParameter)
+		if err != nil {
+			fmt.Println("Error: " + err.Error())
+			return
+		}
 		err = migrator.Rollback(db, migrationProvider, count)
 		if err != nil {
-			panic("Error: " + err.Error())
+			fmt.Println("Error: " + err.Error())
+			return
+		}
+	case "add":
+		err := migrator.AddNewMigrationFiles(secondParameter)
+		if err != nil {
+			fmt.Println("Error: " + err.Error())
+			return
 		}
 	default:
 		printUsage()
 	}
 }
 
-func commandLineParameters() (string, int, error) {
+func getCount(param string) (int, error) {
+	if param == "" {
+		return 0, nil
+	}
+
+	count, err := strconv.Atoi(param)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func commandLineParameters() (string, string, error) {
 	if len(os.Args) == 2 {
-		return os.Args[1], 0, nil
+		return os.Args[1], "", nil
 	}
 
 	if len(os.Args) == 3 {
-		migrationCount, err := strconv.Atoi(os.Args[2])
-		if err != nil {
-			return "", 0, err
-		}
-
-		return os.Args[1], migrationCount, nil
+		return os.Args[1], os.Args[2], nil
 	}
 
-	return "", 0, fmt.Errorf("Invalid command line paramteres")
+	return "", "0", fmt.Errorf("Invalid command line paramteres")
 }
 
 func printUsage() {

@@ -7,6 +7,7 @@ import (
 	"os"
 	"regexp"
 	"sort"
+	"time"
 )
 
 const (
@@ -85,6 +86,51 @@ func Migrate(db *sql.DB, migrationProvider MigrationProvider, count int) error {
 	}
 
 	fmt.Printf("Migrated %d items\n", migrateCount)
+
+	return nil
+}
+
+func AddNewMigrationFiles(customText string) error {
+	var err error
+	err = createNewMigrationFiles(customText, false)
+	if err != nil {
+		return err
+	}
+	err = createNewMigrationFiles(customText, true)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func createNewMigrationFiles(customText string, isRollback bool) error {
+	alteredCustomText := customText
+	mgType := "migrate"
+
+	if customText != "" {
+		alteredCustomText = "-" + customText
+	}
+
+	if isRollback {
+		mgType = "rollback"
+	}
+
+	fileName := fmt.Sprintf(
+		"%s-%s%s.sql",
+		time.Now().Format("2006-01-02_15_04_05"),
+		mgType,
+		alteredCustomText,
+	)
+
+	filePath := migrationFolder + "/" + fileName
+	file, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	fmt.Printf("Migration file %s created\n", filePath)
 
 	return nil
 }
