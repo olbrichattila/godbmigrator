@@ -76,6 +76,55 @@ migrator rollback 2
 The number of rollbacks and migrates are not mandatory.
 If it is set, for rollbacks it only apply for the last rollback batch
 
+## .env settings
+
+Create a .env file into your root directory
+Examples:
+
+### sqlite
+```
+DB_CONNECTION=sqlite
+DB_DATABASE=./data/database.sqlite
+```
+
+### MySql
+```
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=migrator
+DB_USERNAME=root
+DB_PASSWORD=password
+```
+
+
+### Postgres
+```
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=postgres
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+```
+
+Note: Postres currently supports only sslmod disable, others to come:
+- disable
+- require
+- verify-ca
+- verify-full
+- prefer
+- allow
+
+## Setting the migration provider in .env
+It is possible to set the migration provider (see above, saves to database or json)
+Possible values are:
+```
+MIGRATOR_MIGRATION_PROVIDER=json
+MIGRATOR_MIGRATION_PROVIDER=db
+```
+If not set, it defaults to db.
+
 ## Adding to your code.
 
 Import the module:
