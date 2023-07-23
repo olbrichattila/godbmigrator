@@ -17,11 +17,11 @@ type MySqlMigrationTableSqlProvider struct {
 
 func MigrationTableProviderByDriverName(driverName string) (MigrationTableSqlProvider, error) {
 	switch driverName {
-	case "sqlite":
+	case dbTypeSqlite:
 		return &SqliteMigrationTableSqlProvider{}, nil
-	case "pq":
+	case dbTypePostgres:
 		return &PostgresMigrationTableSqlProvider{}, nil
-	case "mysql":
+	case dbTypeMySql:
 		return &MySqlMigrationTableSqlProvider{}, nil
 	default:
 		return nil, fmt.Errorf("Provider %s does not exists", driverName)

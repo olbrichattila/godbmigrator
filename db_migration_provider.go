@@ -9,6 +9,12 @@ import (
 	"time"
 )
 
+const (
+	dbTypeSqlite   = "sqlite"
+	dbTypePostgres = "pg"
+	dbTypeMySql    = "mysql"
+)
+
 type DbMigration struct {
 	db                  *sql.DB
 	timeString          string
@@ -137,7 +143,7 @@ func (m *DbMigration) lastMigrationDate() string {
 }
 
 func (m *DbMigration) setSqlBindingParameter(driverType string) {
-	if driverType == "pq" {
+	if driverType == dbTypePostgres {
 		m.sqlBindingParameter = "$1"
 
 		return
@@ -158,15 +164,15 @@ func (m *DbMigration) diverType() (string, error) {
 	driverType := reflect.TypeOf(m.db.Driver()).String()
 
 	if strings.Contains(driverType, "mysql") {
-		return "mysql", nil
+		return dbTypeMySql, nil
 	}
 
-	if strings.Contains(driverType, "pg") || strings.Contains(driverType, "postgres") {
-		return "pg", nil
+	if strings.Contains(driverType, "pq") || strings.Contains(driverType, "postgres") {
+		return dbTypePostgres, nil
 	}
 
 	if strings.Contains(driverType, "sqlite") {
-		return "sqlite", nil
+		return dbTypeSqlite, nil
 	}
 
 	return "", fmt.Errorf("The driver used %s does not match any known dirver by the application", driverType)
