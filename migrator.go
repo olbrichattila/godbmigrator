@@ -57,19 +57,11 @@ func Rollback(db *sql.DB, migrationProvider MigrationProvider, count int) error 
 func Migrate(db *sql.DB, migrationProvider MigrationProvider, count int) error {
 	m := newMigrator(db)
 	m.migrationProvider = migrationProvider
-	files, err := ioutil.ReadDir(migrationFolder)
+
+	fileNames, err := m.orderedMigrationFiles()
 	if err != nil {
 		return err
 	}
-
-	var fileNames []string
-	for _, file := range files {
-		if m.isMigration(file.Name()) {
-			fileNames = append(fileNames, file.Name())
-		}
-	}
-
-	sort.Strings(fileNames)
 
 	migrateCount := 0
 	for _, fileName := range fileNames {
@@ -91,6 +83,24 @@ func Migrate(db *sql.DB, migrationProvider MigrationProvider, count int) error {
 	fmt.Printf("Migrated %d items\n", migrateCount)
 
 	return nil
+}
+
+func (m *migration) orderedMigrationFiles() ([]string, error) {
+	files, err := ioutil.ReadDir(migrationFolder)
+	if err != nil {
+		return nil, err
+	}
+
+	var fileNames []string
+	for _, file := range files {
+		if m.isMigration(file.Name()) {
+			fileNames = append(fileNames, file.Name())
+		}
+	}
+
+	sort.Strings(fileNames)
+
+	return fileNames, nil
 }
 
 func (m *migration) executeSqlFile(fileName string) (bool, error) {
