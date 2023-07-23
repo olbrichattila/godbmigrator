@@ -45,6 +45,10 @@ func (m *DbMigration) LatestMigrations() ([]string, error) {
 	var migrationList []string
 	lastMigrationDate := m.lastMigrationDate()
 
+	if lastMigrationDate == "" {
+		return migrationList, nil
+	}
+
 	rows, err := m.db.Query(fmt.Sprintf(
 		`SELECT file_name 
 		 FROM migrations

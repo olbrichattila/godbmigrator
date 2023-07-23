@@ -31,23 +31,23 @@ func MigrationTableProviderByDriverName(driverName string) (MigrationTableSqlPro
 func (p *PostgresMigrationTableSqlProvider) CreateSql() string {
 	return `CREATE TABLE IF NOT EXISTS migrations (
 		file_name VARCHAR(255),
-		created_at VARCHAR(20),
-		deleted_at VARCHAR(20)
+		created_at TIMESTAMP,
+		deleted_at TIMESTAMP
 	)`
 }
 
 func (p *SqliteMigrationTableSqlProvider) CreateSql() string {
 	return `CREATE TABLE IF NOT EXISTS migrations (
 		file_name VARCHAR(255),
-		created_at VARCHAR(20),
-		deleted_at VARCHAR(20)
+		created_at DATETIME,
+		deleted_at DATETIME
 	)`
 }
 
 func (p *MySqlMigrationTableSqlProvider) CreateSql() string {
 	return `CREATE TABLE IF NOT EXISTS migrations (
 		file_name VARCHAR(255),
-		created_at VARCHAR(20),
-		deleted_at VARCHAR(20)
+		created_at DATETIME,
+		deleted_at DATETIME
 	)`
 }

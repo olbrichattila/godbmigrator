@@ -9,9 +9,9 @@ import (
 )
 
 func main() {
-	//db, err := migrator.NewSqliteStore("./data/database.sqlite")
-	// db, err := migrator.NewPostgresStore("localhost", 5432, "postgres", "postgres", "postgres", migrator.PgSslModeDisable)
-	db, err := migrator.NewMysqlStore("localhost", 3306, "root", "H8E7kU8Y", "migrator")
+	// db, err := migrator.NewSqliteStore("./data/database.sqlite")
+	db, err := migrator.NewPostgresStore("localhost", 5432, "postgres", "postgres", "postgres", migrator.PgSslModeDisable)
+	// db, err := migrator.NewMysqlStore("localhost", 3306, "root", "H8E7kU8Y", "migrator")
 	if err != nil {
 		fmt.Println("Error: " + err.Error())
 		return
