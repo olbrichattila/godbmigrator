@@ -28,8 +28,6 @@ func main() {
 		return
 	}
 
-	// migrationProvider, err := migrator.NewMigrationProvider("json", nil)
-	// migrationProvider, err := migrator.NewMigrationProvider("db", db)
 	migrationProvider, err := getMigrationProvider(db)
 	if err != nil {
 		fmt.Println("Error: " + err.Error())

@@ -206,7 +206,15 @@ err = migrator.Rollback(db, migrationProvider, count)
 if err != nil {
     panic("Error: " + err.Error())
 }
+```
 
+## Example, create new migratin file:
+(same as ``````go run cmd/cmd.go add <your custom message>``````)
+```
+err := migrator.AddNewMigrationFiles(secondParameter)
+if err != nil {
+    panic("Error: " + err.Error())
+}
 ```
 
 ## Available make targets:
