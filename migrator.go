@@ -165,7 +165,6 @@ func (m *migration) executeSql(sql string) error {
 	return err
 }
 
-// cut from here
 func (m *migration) isMigration(fileName string) bool {
 	regex, err := regexp.Compile(migrationFileRegex)
 	if err != nil {
