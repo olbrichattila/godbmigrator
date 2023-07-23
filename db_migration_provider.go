@@ -144,7 +144,7 @@ func (m *DbMigration) lastMigrationDate() string {
 
 func (m *DbMigration) setSqlBindingParameter(driverType string) {
 	if driverType == dbTypePostgres {
-		m.sqlBindingParameter = "$1"
+		m.sqlBindingParameter = "$"
 
 		return
 	}
