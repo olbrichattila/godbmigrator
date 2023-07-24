@@ -122,7 +122,7 @@ func getDatabase() (*sql.DB, error) {
 			os.Getenv("DB_USERNAME"),
 			os.Getenv("DB_PASSWORD"),
 			os.Getenv("DB_DATABASE"),
-			migrator.PgSslModeDisable,
+			migrator.PgsSslMode.Disable,
 		)
 		return db, err
 	case "mysql":

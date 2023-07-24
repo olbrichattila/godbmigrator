@@ -7,14 +7,23 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const (
-	PgSslModeDisable    = "disable"
-	PgSslModeRequire    = "require"
-	PgSslModeVerifyCa   = "verify-ca"
-	PgSslModeVerifyFull = "verify-full"
-	PgSslModePrefer     = "prefer"
-	PgSslModeAllow      = "allow"
-)
+type pgsSslMode struct {
+	Disable    string
+	Require    string
+	VerifyCa   string
+	VerifyFull string
+	Prefer     string
+	Allow      string
+}
+
+var PgsSslMode = &pgsSslMode{
+	Disable:    "disable",
+	Require:    "require",
+	VerifyCa:   "verify-ca",
+	VerifyFull: "verify-full",
+	Prefer:     "prefer",
+	Allow:      "allow",
+}
 
 func NewPostgresStore(
 	host string,
