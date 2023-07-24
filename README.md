@@ -2,6 +2,12 @@
 
 !!Under development...
 
+This is a package, not to be used individually, but serves the purpose to add migration to your project.
+If you would like to use this as a command line tool, please use this package with the command line wrapper
+available here:
+
+git@github.com:olbrichattila/godbmigrator_cmd.git
+
 ## Create migration SQL files into the the folder migrations (will be configurable)
 
 ## What is the provider?
