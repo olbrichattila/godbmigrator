@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	godotenv "github.com/joho/godotenv"
-	migrator "github.com/olbrichattila/go-database-migrator"
+	migrator "github.com/olbrichattila/godbmigrator"
 )
 
 func main() {

@@ -129,7 +129,7 @@ If not set, it defaults to db.
 
 Import the module:
 
-```migrator "github.com/olbrichattila/go-database-migrator"```
+```migrator "github.com/olbrichattila/godbmigrator"```
 
 You need to have a DB connection, and a migration provider.
 
