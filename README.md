@@ -129,7 +129,7 @@ if err != nil {
 ```
 
 ## Available make targets:
-
 ```
+make run
 make install
 ```
