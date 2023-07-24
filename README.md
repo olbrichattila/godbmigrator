@@ -60,12 +60,13 @@ Currently the command line utility supports only SqLite, the build in solution s
 ## Example migrate: (where the db is your *sql.DB)
 
 ```
+migrationFilePath := "./migration"
 migrationProvider, err := migrator.NewMigrationProvider("json")
 if err != nil {
     panic("Error: " + err.Error())
 }
 
-err = migrator.Migrate(db, migrationProvider, count)
+err = migrator.Migrate(db, migrationProvider, migrationFilePath, count)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -73,12 +74,13 @@ if err != nil {
 
 ## Example rollback: (where the db is your *sql.DB)
 ```
+migrationFilePath := "./migration"
 migrationProvider, err := migrator.NewMigrationProvider("json", nil)
 if err != nil {
     panic("Error: " + err.Error())
 }
 
-err = migrator.Rollback(db, migrationProvider, count)
+err = migrator.Rollback(db, migrationProvider, migrationFilePath, count)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -86,17 +88,13 @@ if err != nil {
 
 ## Migrate With database provider
 ```
-db, err := migrator.NewSqliteStore("./data/database.sqlite")
-if err != nil {
-    panic("Error: " + err.Error())
-}
-
+migrationFilePath := "./migration"
 migrationProvider, err := migrator.NewMigrationProvider("db", db)
 if err != nil {
     panic("Error: " + err.Error())
 }
 
-err = migrator.Migrate(db, migrationProvider, count)
+err = migrator.Migrate(db, migrationProvider, migrationFilePath, count)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -104,17 +102,13 @@ if err != nil {
 
 ## Rollback With database provider
 ```
-db, err := migrator.NewSqliteStore("./data/database.sqlite")
-if err != nil {
-    panic("Error: " + err.Error())
-}
-
+migrationFilePath := "./migration"
 migrationProvider, err := migrator.NewMigrationProvider("db", db)
 if err != nil {
     panic("Error: " + err.Error())
 }
 
-err = migrator.Rollback(db, migrationProvider, count)
+err = migrator.Rollback(db, migrationProvider, migrationFilePath, count)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -122,7 +116,8 @@ if err != nil {
 
 ## Example, create new migration file:
 ```
-err := migrator.AddNewMigrationFiles(secondParameter)
+migrationFilePath := "./migration"
+err := migrator.AddNewMigrationFiles("custom-text-or-emty", migrationFilePath)
 if err != nil {
     panic("Error: " + err.Error())
 }

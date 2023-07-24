@@ -11,7 +11,6 @@ import (
 )
 
 const (
-	migrationFolder      = "./migrations"
 	migrationFileRegex   = "^.*migrate.*\\.sql$"
 	rollbackReplaceRegex = "migrate"
 )
@@ -19,15 +18,22 @@ const (
 type migration struct {
 	db                *sql.DB
 	migrationProvider MigrationProvider
+	migrationFilePath string
 }
 
 func newMigrator(db *sql.DB) *migration {
 	return &migration{db: db}
 }
 
-func Rollback(db *sql.DB, migrationProvider MigrationProvider, count int) error {
+func Rollback(
+	db *sql.DB,
+	migrationProvider MigrationProvider,
+	migrationFilePath string,
+	count int,
+) error {
 	var err error
 	m := newMigrator(db)
+	m.migrationFilePath = migrationFilePath
 	m.migrationProvider = migrationProvider
 	latestMigrations, err := m.migrationProvider.LatestMigrations()
 	if err != nil {
@@ -59,7 +65,12 @@ func Rollback(db *sql.DB, migrationProvider MigrationProvider, count int) error 
 	return nil
 }
 
-func Migrate(db *sql.DB, migrationProvider MigrationProvider, count int) error {
+func Migrate(
+	db *sql.DB,
+	migrationProvider MigrationProvider,
+	migrationFilePath string,
+	count int,
+) error {
 	m := newMigrator(db)
 	m.migrationProvider = migrationProvider
 
@@ -90,13 +101,13 @@ func Migrate(db *sql.DB, migrationProvider MigrationProvider, count int) error {
 	return nil
 }
 
-func AddNewMigrationFiles(customText string) error {
+func AddNewMigrationFiles(customText, migrationFilePath string) error {
 	var err error
-	err = createNewMigrationFiles(customText, false)
+	err = createNewMigrationFiles(customText, migrationFilePath, false)
 	if err != nil {
 		return err
 	}
-	err = createNewMigrationFiles(customText, true)
+	err = createNewMigrationFiles(customText, migrationFilePath, true)
 	if err != nil {
 		return err
 	}
@@ -104,7 +115,7 @@ func AddNewMigrationFiles(customText string) error {
 	return nil
 }
 
-func createNewMigrationFiles(customText string, isRollback bool) error {
+func createNewMigrationFiles(migrationFilePath, customText string, isRollback bool) error {
 	alteredCustomText := customText
 	mgType := "migrate"
 
@@ -123,7 +134,7 @@ func createNewMigrationFiles(customText string, isRollback bool) error {
 		alteredCustomText,
 	)
 
-	filePath := migrationFolder + "/" + fileName
+	filePath := migrationFilePath + "/" + fileName
 	file, err := os.Create(filePath)
 	if err != nil {
 		return err
@@ -136,7 +147,7 @@ func createNewMigrationFiles(customText string, isRollback bool) error {
 }
 
 func (m *migration) orderedMigrationFiles() ([]string, error) {
-	files, err := ioutil.ReadDir(migrationFolder)
+	files, err := ioutil.ReadDir(m.migrationFilePath)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +170,7 @@ func (m *migration) executeSqlFile(fileName string) (bool, error) {
 	}
 
 	fmt.Printf("Running migration '%s'\n", fileName)
-	content, err := ioutil.ReadFile(migrationFolder + "/" + fileName)
+	content, err := ioutil.ReadFile(m.migrationFilePath + "/" + fileName)
 	if err != nil {
 		return false, err
 	}
@@ -185,7 +196,7 @@ func (m *migration) executeRollbackSqlFile(fileName string) error {
 	}
 
 	fmt.Printf("Running rollback '%s'\n", rollbackFileName)
-	content, err := ioutil.ReadFile(migrationFolder + "/" + rollbackFileName)
+	content, err := ioutil.ReadFile(m.migrationFilePath + "/" + rollbackFileName)
 	if err != nil {
 		return err
 	}
@@ -242,7 +253,7 @@ func (m *migration) resolveRollbackFile(migrationFileName string) (string, error
 		return "unknown"
 	})
 
-	if !fileExists(migrationFolder + "/" + result) {
+	if !fileExists(m.migrationFilePath + "/" + result) {
 		return "", fmt.Errorf("File does not %s exists", result)
 	}
 
