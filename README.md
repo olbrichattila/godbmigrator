@@ -36,95 +36,6 @@ For example:
 0006-rollback-new.sql
 ```
 
-## Command line usage:
-
-# Without building the app
-
-Migrate:
-```go run cmd/cmd.go migrate```
-
-Rollback:
-```go run cmd/cmd.go rollback```
-
-Adding new migratio and rollack file:
-``````go run cmd/cmd.go add <your custom message>``````
-Note: the custom message is not mandatory, in that case the file will be a standard format, like date_time-migration.sql
-
-### Migrate or rollback specified amount of migrations (like 2)
-
-Migrate:
-```go run cmd/cmd.go migrate 2```
-
-Rollback:
-```go run cmd/cmd.go rollback 2```
-
-### When building the application.
-
-```make install```
-The build folder will contain the migrator executable.
-
-Usage is the same but using the application:
-
-```
-migrator migrate
-migrator rollback
-
-migrator migrate 2
-migrator rollback 2
-```
-
-The number of rollbacks and migrates are not mandatory.
-If it is set, for rollbacks it only apply for the last rollback batch
-
-## .env settings
-
-Create a .env file into your root directory
-Examples:
-
-### sqlite
-```
-DB_CONNECTION=sqlite
-DB_DATABASE=./data/database.sqlite
-```
-
-### MySql
-```
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=migrator
-DB_USERNAME=root
-DB_PASSWORD=password
-```
-
-
-### Postgres
-```
-DB_CONNECTION=pgsql
-DB_HOST=127.0.0.1
-DB_PORT=5432
-DB_DATABASE=postgres
-DB_USERNAME=postgres
-DB_PASSWORD=postgres
-```
-
-Note: Postres currently supports only sslmod disable, others to come:
-- disable
-- require
-- verify-ca
-- verify-full
-- prefer
-- allow
-
-## Setting the migration provider in .env
-It is possible to set the migration provider (see above, saves to database or json)
-Possible values are:
-```
-MIGRATOR_MIGRATION_PROVIDER=json
-MIGRATOR_MIGRATION_PROVIDER=db
-```
-If not set, it defaults to db.
-
 ## Adding to your code.
 
 Import the module:
@@ -138,12 +49,7 @@ The migration provider stores the migration status to:
 - database
 - (others to come)
 
-
 Currently the command line utility supports only SqLite, the build in solution shoud work, but not tested with oher databases
-
-Coming soon:
-- MySql
-- Postgresql
 
 ## Example migrate: (where the db is your *sql.DB)
 
@@ -209,7 +115,6 @@ if err != nil {
 ```
 
 ## Example, create new migration file:
-(same as ``````go run cmd/cmd.go add <your custom message>``````)
 ```
 err := migrator.AddNewMigrationFiles(secondParameter)
 if err != nil {
@@ -220,17 +125,5 @@ if err != nil {
 ## Available make targets:
 
 ```
-mage migrate
-make rollback
 make install
 ```
-## Switch .env file with boilerplate setup for the followin database connections
-```
-switch-sqlite:
-switch-mysql:
-switch-pgsql:
-```
-## Coming soon
-
-.env where you can define the database connection. migration file paths and migration provider type therefore it can be used as a full featured command line migrator.
-
