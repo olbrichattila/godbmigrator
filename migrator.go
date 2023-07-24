@@ -72,8 +72,8 @@ func Migrate(
 	count int,
 ) error {
 	m := newMigrator(db)
+	m.migrationFilePath = migrationFilePath
 	m.migrationProvider = migrationProvider
-
 	fileNames, err := m.orderedMigrationFiles()
 	if err != nil {
 		return err
