@@ -8,7 +8,7 @@ available here:
 
 git@github.com:olbrichattila/godbmigrator_cmd.git
 
-## Create migration SQL files into the the folder migrations (will be configurable)
+## Create migration SQL files into a folder
 
 ## What is the provider?
 
