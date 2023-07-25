@@ -6,7 +6,7 @@ import (
 )
 
 type MigrationProvider interface {
-	LatestMigrations() ([]string, error)
+	Migrations(bool) ([]string, error)
 	AddToMigration(string) error
 	RemoveFromMigration(string) error
 	MigrationExistsForFile(string) bool

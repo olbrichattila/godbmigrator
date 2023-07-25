@@ -41,22 +41,21 @@ func newDbMigration(db *sql.DB) (*DbMigration, error) {
 	return dbMigration, nil
 }
 
-func (m *DbMigration) LatestMigrations() ([]string, error) {
+func (m *DbMigration) Migrations(isLatest bool) ([]string, error) {
 	var migrationList []string
-	lastMigrationDate := m.lastMigrationDate()
+	var rows *sql.Rows
+	var err error
 
+	lastMigrationDate := m.lastMigrationDate()
 	if lastMigrationDate == "" {
 		return migrationList, nil
 	}
 
-	rows, err := m.db.Query(fmt.Sprintf(
-		`SELECT file_name 
-		 FROM migrations
-		 WHERE created_at = %s 
-		 AND deleted_at IS NULL
-		 ORDER BY file_name DESC`,
-		m.getBindingParameter(1),
-	), lastMigrationDate)
+	if isLatest {
+		rows, err = m.latestMigrations(lastMigrationDate)
+	} else {
+		rows, err = m.allMigrations()
+	}
 
 	if err != nil {
 		return nil, err
@@ -74,6 +73,26 @@ func (m *DbMigration) LatestMigrations() ([]string, error) {
 	}
 
 	return migrationList, nil
+}
+
+func (m *DbMigration) latestMigrations(lastMigrationDate string) (*sql.Rows, error) {
+	return m.db.Query(fmt.Sprintf(
+		`SELECT file_name 
+		 FROM migrations
+		 WHERE created_at = %s 
+		 AND deleted_at IS NULL
+		 ORDER BY file_name DESC`,
+		m.getBindingParameter(1),
+	), lastMigrationDate)
+}
+
+func (m *DbMigration) allMigrations() (*sql.Rows, error) {
+	return m.db.Query(
+		`SELECT file_name 
+		 FROM migrations
+		 WHERE deleted_at IS NULL
+		 ORDER BY file_name DESC`,
+	)
 }
 
 func (m *DbMigration) AddToMigration(fileName string) error {

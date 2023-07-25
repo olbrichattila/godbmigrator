@@ -1,0 +1,30 @@
+package main
+
+import (
+	"database/sql"
+
+	_ "github.com/mattn/go-sqlite3"
+	migrator "github.com/olbrichattila/godbmigrator"
+)
+
+func main() {
+	// rename cmd.go to bak, then rename this to .go and test your changes
+	// don't forget to go mod tidy before pushing back to git
+
+	db, _ := sql.Open("sqlite3", "./data/data.db")
+	migrationFilePath := "./migrations"
+	migrationProvider, err := migrator.NewMigrationProvider("db", db)
+	// migrationProvider, err := migrator.NewMigrationProvider("json", db)
+
+	if err != nil {
+		panic("Error: " + err.Error())
+	}
+
+	// comment in what you are testing
+	err = migrator.Refresh(db, migrationProvider, migrationFilePath)
+	// err = migrator.Migrate(db, migrationProvider, migrationFilePath, 2)
+	// err = migrator.Rollback(db, migrationProvider, migrationFilePath, 0)
+	if err != nil {
+		panic("Error: " + err.Error())
+	}
+}

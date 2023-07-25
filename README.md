@@ -84,7 +84,22 @@ if err != nil {
 }
 ```
 
-## Migrate With database provider
+## Example refresh: (where the db is your *sql.DB)
+Refresh is when everithing rolled back and migrated from scratch
+```
+migrationFilePath := "./migration"
+migrationProvider, err := migrator.NewMigrationProvider("json", nil)
+if err != nil {
+    panic("Error: " + err.Error())
+}
+
+err = migrator.Refresh(db, migrationProvider, migrationFilePath)
+if err != nil {
+    panic("Error: " + err.Error())
+}
+```
+
+## Migrate with database provider
 ```
 migrationFilePath := "./migration"
 migrationProvider, err := migrator.NewMigrationProvider("db", db)
@@ -98,7 +113,7 @@ if err != nil {
 }
 ```
 
-## Rollback With database provider
+## Rollback with database provider
 ```
 migrationFilePath := "./migration"
 migrationProvider, err := migrator.NewMigrationProvider("db", db)
@@ -107,6 +122,21 @@ if err != nil {
 }
 
 err = migrator.Rollback(db, migrationProvider, migrationFilePath, count)
+if err != nil {
+    panic("Error: " + err.Error())
+}
+```
+
+## Refresh with database provider
+Refresh is when everithing rolled back and migrated from scratch
+```
+migrationFilePath := "./migration"
+migrationProvider, err := migrator.NewMigrationProvider("db", db)
+if err != nil {
+    panic("Error: " + err.Error())
+}
+
+err = migrator.Refresh(db, migrationProvider, migrationFilePath)
 if err != nil {
     panic("Error: " + err.Error())
 }

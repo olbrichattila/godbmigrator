@@ -31,21 +31,44 @@ func Rollback(
 	migrationFilePath string,
 	count int,
 ) error {
+	return rollback(db, migrationProvider, migrationFilePath, count, false)
+}
+
+func Refresh(
+	db *sql.DB,
+	migrationProvider MigrationProvider,
+	migrationFilePath string,
+) error {
+	err := rollback(db, migrationProvider, migrationFilePath, 0, true)
+	if err != nil {
+		return err
+	}
+
+	return Migrate(db, migrationProvider, migrationFilePath, 0)
+}
+
+func rollback(
+	db *sql.DB,
+	migrationProvider MigrationProvider,
+	migrationFilePath string,
+	count int,
+	isCompleteRollback bool,
+) error {
 	var err error
 	m := newMigrator(db)
 	m.migrationFilePath = migrationFilePath
 	m.migrationProvider = migrationProvider
-	latestMigrations, err := m.migrationProvider.LatestMigrations()
+	migrations, err := m.migrationProvider.Migrations(!isCompleteRollback)
 	if err != nil {
 		return err
 	}
-	if len(latestMigrations) == 0 {
+	if len(migrations) == 0 {
 		fmt.Println("Nothing to rollback")
 		return nil
 	}
 
 	rollbackCount := 0
-	for _, fileName := range latestMigrations {
+	for _, fileName := range migrations {
 		if count > 0 {
 			if rollbackCount == count {
 				break

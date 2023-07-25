@@ -22,7 +22,7 @@ func newJsonMigration() *JsonMigration {
 	return jsonMigration
 }
 
-func (m *JsonMigration) LatestMigrations() ([]string, error) {
+func (m *JsonMigration) Migrations(isLatest bool) ([]string, error) {
 	var latestDate string
 	var filtered []string
 
@@ -33,7 +33,7 @@ func (m *JsonMigration) LatestMigrations() ([]string, error) {
 	}
 
 	for fileName, dateString := range m.data {
-		if dateString == latestDate {
+		if dateString == latestDate || isLatest == false {
 			filtered = append(filtered, fileName)
 		}
 	}
