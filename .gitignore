@@ -40,5 +40,6 @@
 .vscode/
 .env
 /migrations/
+/test-migrations/
 /data/
 /build/

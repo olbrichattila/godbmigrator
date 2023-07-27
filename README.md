@@ -145,7 +145,7 @@ if err != nil {
 ## Example, create new migration file:
 ```
 migrationFilePath := "./migration"
-err := migrator.AddNewMigrationFiles("custom-text-or-emty", migrationFilePath)
+err := migrator.AddNewMigrationFiles(migrationFilePath, "custom-text-or-emty")
 if err != nil {
     panic("Error: " + err.Error())
 }

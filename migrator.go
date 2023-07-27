@@ -124,13 +124,13 @@ func Migrate(
 	return nil
 }
 
-func AddNewMigrationFiles(customText, migrationFilePath string) error {
+func AddNewMigrationFiles(migrationFilePath, customText string) error {
 	var err error
-	err = createNewMigrationFiles(customText, migrationFilePath, false)
+	err = createNewMigrationFiles(migrationFilePath, customText, false)
 	if err != nil {
 		return err
 	}
-	err = createNewMigrationFiles(customText, migrationFilePath, true)
+	err = createNewMigrationFiles(migrationFilePath, customText, true)
 	if err != nil {
 		return err
 	}
