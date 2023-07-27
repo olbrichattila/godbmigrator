@@ -58,6 +58,7 @@ func rollback(
 	m := newMigrator(db)
 	m.migrationFilePath = migrationFilePath
 	m.migrationProvider = migrationProvider
+	m.migrationProvider.SetJsonFileName(migrationFilePath)
 	migrations, err := m.migrationProvider.Migrations(!isCompleteRollback)
 	if err != nil {
 		return err
@@ -97,6 +98,8 @@ func Migrate(
 	m := newMigrator(db)
 	m.migrationFilePath = migrationFilePath
 	m.migrationProvider = migrationProvider
+	m.migrationProvider.SetJsonFileName(migrationFilePath)
+	m.migrationProvider.ResetDate()
 	fileNames, err := m.orderedMigrationFiles()
 	if err != nil {
 		return err

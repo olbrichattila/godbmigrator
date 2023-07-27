@@ -22,8 +22,8 @@ type DbMigration struct {
 }
 
 func newDbMigration(db *sql.DB) (*DbMigration, error) {
-	timeString := time.Now().Format("2006-01-02 15:04:05")
-	dbMigration := &DbMigration{db: db, timeString: timeString}
+	dbMigration := &DbMigration{db: db}
+	dbMigration.ResetDate()
 	driverType, err := dbMigration.diverType()
 	if err != nil {
 		return nil, err
@@ -39,6 +39,10 @@ func newDbMigration(db *sql.DB) (*DbMigration, error) {
 		return nil, err
 	}
 	return dbMigration, nil
+}
+
+func (m *DbMigration) ResetDate() {
+	m.timeString = time.Now().Format("2006-01-02 15:04:05")
 }
 
 func (m *DbMigration) Migrations(isLatest bool) ([]string, error) {
@@ -199,4 +203,13 @@ func (m *DbMigration) diverType() (string, error) {
 	}
 
 	return "", fmt.Errorf("The driver used %s does not match any known dirver by the application", driverType)
+}
+
+func (m *DbMigration) GetJsonFileName() string {
+	// dummy, not used in db version, need due to interface
+	return ""
+}
+
+func (m *DbMigration) SetJsonFileName(fileName string) {
+	// dummy, not used in db version, need due to interface
 }

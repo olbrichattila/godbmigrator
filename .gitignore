@@ -43,3 +43,5 @@
 /test-migrations/
 /data/
 /build/
+/test/test-migrations/
+/test/data/

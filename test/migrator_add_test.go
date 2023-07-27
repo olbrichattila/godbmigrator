@@ -1,32 +1,16 @@
-package migrator
+package migrator_test
 
 import (
 	"io/ioutil"
 	"os"
 	"strings"
-	"testing"
 
-	"github.com/stretchr/testify/suite"
+	migrator "github.com/olbrichattila/godbmigrator"
 )
-
-const testMigrationFilePath = "./test-migrations"
-
-type TestSuite struct {
-	suite.Suite
-}
-
-func TestRunner(t *testing.T) {
-	suite.Run(t, new(TestSuite))
-}
-
-// Duplicate this to add new test scenario
-func (t *TestSuite) TestItWorks() {
-	t.True(true)
-}
 
 func (t *TestSuite) TestMigrationAdded() {
 	resetrTestMigrationPath(testMigrationFilePath)
-	err := AddNewMigrationFiles(testMigrationFilePath, "")
+	err := migrator.AddNewMigrationFiles(testMigrationFilePath, "")
 	t.Nil(err)
 
 	count, err := countFilesInDirectory(testMigrationFilePath)
@@ -39,7 +23,7 @@ func (t *TestSuite) TestMigrationAddedWithCustomName() {
 	resetrTestMigrationPath(testMigrationFilePath)
 	customText := "custom-text"
 
-	err := AddNewMigrationFiles(testMigrationFilePath, customText)
+	err := migrator.AddNewMigrationFiles(testMigrationFilePath, customText)
 	t.Nil(err)
 
 	count, err := countFilesInDirectory(testMigrationFilePath)
