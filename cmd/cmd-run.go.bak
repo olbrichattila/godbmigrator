@@ -15,7 +15,6 @@ func main() {
 	migrationFilePath := "./migrations"
 	migrationProvider, err := migrator.NewMigrationProvider("db", db)
 	// migrationProvider, err := migrator.NewMigrationProvider("json", db)
-
 	if err != nil {
 		panic("Error: " + err.Error())
 	}
@@ -24,6 +23,8 @@ func main() {
 	err = migrator.Refresh(db, migrationProvider, migrationFilePath)
 	// err = migrator.Migrate(db, migrationProvider, migrationFilePath, 2)
 	// err = migrator.Rollback(db, migrationProvider, migrationFilePath, 0)
+
+	//err := migrator.AddNewMigrationFiles("./test_fixtures", "fixture")
 	if err != nil {
 		panic("Error: " + err.Error())
 	}

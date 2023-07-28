@@ -155,4 +155,5 @@ if err != nil {
 ```
 make run
 make install
+make run-test
 ```

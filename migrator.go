@@ -58,6 +58,7 @@ func rollback(
 	m := newMigrator(db)
 	m.migrationFilePath = migrationFilePath
 	m.migrationProvider = migrationProvider
+	m.migrationProvider.SetJsonFileName(migrationFilePath)
 	migrations, err := m.migrationProvider.Migrations(!isCompleteRollback)
 	if err != nil {
 		return err
@@ -97,6 +98,8 @@ func Migrate(
 	m := newMigrator(db)
 	m.migrationFilePath = migrationFilePath
 	m.migrationProvider = migrationProvider
+	m.migrationProvider.SetJsonFileName(migrationFilePath)
+	m.migrationProvider.ResetDate()
 	fileNames, err := m.orderedMigrationFiles()
 	if err != nil {
 		return err
@@ -234,7 +237,6 @@ func (m *migration) executeRollbackSqlFile(fileName string) error {
 
 func (m *migration) executeSql(sql string) error {
 	tx, err := m.db.Begin()
-
 	if err != nil {
 		return err
 	}
@@ -244,19 +246,16 @@ func (m *migration) executeSql(sql string) error {
 			tx.Rollback()
 			return
 		}
-		tx.Commit()
+		err = tx.Commit()
 	}()
 
-	_, err = m.db.Exec(sql)
+	_, err = tx.Exec(sql)
 
 	return err
 }
 
 func (m *migration) isMigration(fileName string) bool {
-	regex, err := regexp.Compile(migrationFileRegex)
-	if err != nil {
-		fmt.Println("Regex pattern error: " + err.Error())
-	}
+	regex := regexp.MustCompile(migrationFileRegex)
 
 	mathces := regex.FindStringSubmatch(fileName)
 
@@ -264,10 +263,7 @@ func (m *migration) isMigration(fileName string) bool {
 }
 
 func (m *migration) resolveRollbackFile(migrationFileName string) (string, error) {
-	regex, err := regexp.Compile(rollbackReplaceRegex)
-	if err != nil {
-		return "", err
-	}
+	regex := regexp.MustCompile(rollbackReplaceRegex)
 
 	result := regex.ReplaceAllStringFunc(migrationFileName, func(match string) string {
 		if match == rollbackReplaceRegex {

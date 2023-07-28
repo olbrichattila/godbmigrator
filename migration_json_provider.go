@@ -10,16 +10,21 @@ import (
 const migragionJsonFileName = "./migrations/migrations.json"
 
 type JsonMigration struct {
-	data       map[string]string
-	timeString string
+	data         map[string]string
+	timeString   string
+	jsonFileName string
 }
 
 func newJsonMigration() *JsonMigration {
-	timeString := time.Now().Format("2006-01-02 15:04:05")
-	jsonMigration := &JsonMigration{timeString: timeString}
+	jsonMigration := &JsonMigration{}
+	jsonMigration.ResetDate()
 	jsonMigration.loadMigrationFile()
 
 	return jsonMigration
+}
+
+func (m *JsonMigration) ResetDate() {
+	m.timeString = time.Now().Format("2006-01-02 15:04:05")
 }
 
 func (m *JsonMigration) Migrations(isLatest bool) ([]string, error) {
@@ -45,7 +50,8 @@ func (m *JsonMigration) Migrations(isLatest bool) ([]string, error) {
 
 func (m *JsonMigration) loadMigrationFile() error {
 	m.data = make(map[string]string)
-	jsonData, err := ioutil.ReadFile(migragionJsonFileName)
+	jsonFileName := m.GetJsonFileName()
+	jsonData, err := ioutil.ReadFile(jsonFileName)
 	if err != nil {
 		return err
 	}
@@ -64,7 +70,8 @@ func (m *JsonMigration) saveMigrationFile() error {
 		return err
 	}
 
-	return ioutil.WriteFile(migragionJsonFileName, jsonData, 0644)
+	jsonFileName := m.GetJsonFileName()
+	return ioutil.WriteFile(jsonFileName, jsonData, 0644)
 }
 
 func (m *JsonMigration) AddToMigration(fileName string) error {
@@ -81,4 +88,16 @@ func (m *JsonMigration) RemoveFromMigration(fileName string) error {
 
 func (m *JsonMigration) MigrationExistsForFile(fileName string) bool {
 	return m.data[fileName] != ""
+}
+
+func (m *JsonMigration) GetJsonFileName() string {
+	if m.jsonFileName == "" {
+		return migragionJsonFileName
+	}
+
+	return m.jsonFileName
+}
+
+func (m *JsonMigration) SetJsonFileName(fileName string) {
+	m.jsonFileName = fileName + "/migrations.json"
 }
