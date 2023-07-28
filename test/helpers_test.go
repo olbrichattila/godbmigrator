@@ -5,9 +5,13 @@ import (
 	"os"
 )
 
-func inMemorySqlite() (*sql.DB, error) {
-	// return sql.Open("sqlite3", ":memory:")
-	return sql.Open("sqlite3", "./data/data2.sqlite")
+func initMemorySqlite() *sql.DB {
+	db, err := sql.Open("sqlite3", ":memory:")
+	if err != nil {
+		panic(err)
+	}
+
+	return db
 }
 
 func tableCountInDatabase(db *sql.DB) (int, error) {
@@ -22,12 +26,9 @@ func tableCountInDatabase(db *sql.DB) (int, error) {
 	return count, nil
 }
 
-func resetDatabase() error {
-	return os.Remove("./data/data2.sqlite")
-}
-
 func resetJsonFile() error {
-	return os.Remove("./test_fixtures/migrations.json")
+
+	return os.Remove(testFixtureFolder + "/migrations.json")
 }
 
 func initFolder(fullPath string) error {

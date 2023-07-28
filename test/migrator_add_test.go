@@ -4,12 +4,27 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"testing"
 
 	migrator "github.com/olbrichattila/godbmigrator"
+	"github.com/stretchr/testify/suite"
 )
 
-func (t *TestSuite) TestMigrationAdded() {
-	resetrTestMigrationPath(testMigrationFilePath)
+const testMigrationFilePath = "./test-migrations"
+
+type AddTestSuite struct {
+	suite.Suite
+}
+
+func TestAddTestRunner(t *testing.T) {
+	suite.Run(t, new(AddTestSuite))
+}
+
+func (suite *AddTestSuite) SetupTest() {
+	resetTestMigrationPath()
+}
+
+func (t *AddTestSuite) TestMigrationAdded() {
 	err := migrator.AddNewMigrationFiles(testMigrationFilePath, "")
 	t.Nil(err)
 
@@ -19,8 +34,7 @@ func (t *TestSuite) TestMigrationAdded() {
 	t.Equal(2, count)
 }
 
-func (t *TestSuite) TestMigrationAddedWithCustomName() {
-	resetrTestMigrationPath(testMigrationFilePath)
+func (t *AddTestSuite) TestMigrationAddedWithCustomName() {
 	customText := "custom-text"
 
 	err := migrator.AddNewMigrationFiles(testMigrationFilePath, customText)
@@ -37,13 +51,13 @@ func (t *TestSuite) TestMigrationAddedWithCustomName() {
 	t.True(exists)
 }
 
-func resetrTestMigrationPath(path string) error {
-	err := os.RemoveAll(path)
+func resetTestMigrationPath() error {
+	err := os.RemoveAll(testMigrationFilePath)
 	if err != nil {
 		return err
 	}
 
-	err = os.MkdirAll(path, 0755)
+	err = os.MkdirAll(testMigrationFilePath, 0755)
 	if err != nil {
 		return err
 	}
