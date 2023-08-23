@@ -61,8 +61,8 @@ func (p *FirebirdMigrationTableSqlProvider) CreateSql() string {
 	return `EXECUTE BLOCK AS BEGIN
 		if (not exists(select 1 from rdb$relations where rdb$relation_name = 'MIGRATIONS')) then
 		execute statement 'CREATE TABLE MIGRATIONS (
-			file_name VARCHAR(25),
-			created_at VARCHAR(25),
+			file_name VARCHAR(35),
+			created_at VARCHAR(35),
 			deleted_at TIMESTAMP);';
 		END`
 }
