@@ -13,6 +13,7 @@ const (
 	dbTypeSqlite   = "sqlite"
 	dbTypePostgres = "pg"
 	dbTypeMySql    = "mysql"
+	dbTypeFirebird = "firebird"
 )
 
 type DbMigration struct {
@@ -200,6 +201,10 @@ func (m *DbMigration) diverType() (string, error) {
 
 	if strings.Contains(driverType, "sqlite") {
 		return dbTypeSqlite, nil
+	}
+
+	if strings.Contains(driverType, "firebirdsql") {
+		return dbTypeFirebird, nil
 	}
 
 	return "", fmt.Errorf("The driver used %s does not match any known dirver by the application", driverType)

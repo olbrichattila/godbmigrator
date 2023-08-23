@@ -15,6 +15,9 @@ type PostgresMigrationTableSqlProvider struct {
 type MySqlMigrationTableSqlProvider struct {
 }
 
+type FirebirdMigrationTableSqlProvider struct {
+}
+
 func MigrationTableProviderByDriverName(driverName string) (MigrationTableSqlProvider, error) {
 	switch driverName {
 	case dbTypeSqlite:
@@ -23,6 +26,8 @@ func MigrationTableProviderByDriverName(driverName string) (MigrationTableSqlPro
 		return &PostgresMigrationTableSqlProvider{}, nil
 	case dbTypeMySql:
 		return &MySqlMigrationTableSqlProvider{}, nil
+	case dbTypeFirebird:
+		return &FirebirdMigrationTableSqlProvider{}, nil
 	default:
 		return nil, fmt.Errorf("Provider %s does not exists", driverName)
 	}
@@ -50,4 +55,14 @@ func (p *MySqlMigrationTableSqlProvider) CreateSql() string {
 		created_at DATETIME,
 		deleted_at DATETIME
 	)`
+}
+
+func (p *FirebirdMigrationTableSqlProvider) CreateSql() string {
+	return `EXECUTE BLOCK AS BEGIN
+		if (not exists(select 1 from rdb$relations where rdb$relation_name = 'MIGRATIONS')) then
+		execute statement 'CREATE TABLE MIGRATIONS (
+			file_name VARCHAR(25),
+			created_at VARCHAR(25),
+			deleted_at TIMESTAMP);';
+		END`
 }

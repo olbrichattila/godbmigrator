@@ -46,3 +46,4 @@
 /test/test-migrations/
 /test/data/
 test/test_fixtures/migrations.json
+/cmd/test.go
