@@ -6,7 +6,7 @@ available here:
 
 https://github.com/olbrichattila/godbmigrator_cmd
 
-## Create migration SQL files into a folder
+## Create migration SQL files into a folderfmysql
 
 ## What is the provider?
 
@@ -157,6 +157,13 @@ make run
 make install
 make run-test
 ```
+
+## Currently supported database drivers:
+
+- SqLite
+- MySql
+- PostgresQl
+- Firebird / Interbase
 
 ## To be expected in next version
 
