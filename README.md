@@ -170,4 +170,4 @@ make run-test
 ## To be expected in next version
 
 - Store what was migrated as well even when migration error happened and rolled back
-- Report function, whick can create a short report (migrations and rollback in order) or a large report with the queries migrator exected (or tried to execute)
+- Report function, whick can create a short report (migrations and rollback in order) or a large report with the queries migrator executed (or tried to execute)
