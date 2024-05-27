@@ -13,7 +13,7 @@ type MigrationProvider interface {
 	ResetDate()
 	GetJsonFileName() string
 	SetJsonFileName(string)
-	AddToMigrationReport(string, string) error
+	AddToMigrationReport(string, error) error
 }
 
 func NewMigrationProvider(providerType string, db *sql.DB) (MigrationProvider, error) {

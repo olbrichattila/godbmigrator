@@ -207,10 +207,9 @@ func (m *migration) executeSqlFile(fileName string) (bool, error) {
 		if err != nil {
 			return false, err
 		}
-		m.migrationProvider.AddToMigrationReport(fileName, "success")
-	} else {
-		m.migrationProvider.AddToMigrationReport(fileName, err.Error())
 	}
+
+	m.migrationProvider.AddToMigrationReport(fileName, err)
 
 	return true, err
 }
@@ -276,7 +275,7 @@ func (m *migration) resolveRollbackFile(migrationFileName string) (string, error
 	})
 
 	if !fileExists(m.migrationFilePath + "/" + result) {
-		return "", fmt.Errorf("File does not %s exists", result)
+		return "", fmt.Errorf("file does not %s exists", result)
 	}
 
 	return result, nil

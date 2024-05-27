@@ -225,17 +225,26 @@ func (m *DbMigration) SetJsonFileName(filePath string) {
 	// dummy, not used in db version, need due to interface
 }
 
-func (m *DbMigration) AddToMigrationReport(fileName, message string) error {
-	sql := fmt.Sprintf(`INSERT INTO migration_reports  
-			(file_name, created_at, message)
-			VALUES (%s, %s, %s)`,
+func (m *DbMigration) AddToMigrationReport(fileName string, errorToLog error) error {
+	sql := fmt.Sprintf(`INSERT INTO migration_reports
+			(file_name, created_at, result_status, message)
+			VALUES (%s, %s, %s, %s)`,
 		m.getBindingParameter(1),
 		m.getBindingParameter(2),
 		m.getBindingParameter(3),
+		m.getBindingParameter(4),
 	)
 
-	cretedAt := time.Now().Format("2006-01-02 15:04:05")
-	_, err := m.db.Exec(sql, fileName, cretedAt, message)
+	message := "ok"
+	status := "success"
+	if errorToLog != nil {
+		message = errorToLog.Error()
+		status = "error"
+	}
+
+	createdAt := time.Now().Format("2006-01-02 15:04:05")
+
+	_, err := m.db.Exec(sql, fileName, createdAt, status, message)
 
 	return err
 }

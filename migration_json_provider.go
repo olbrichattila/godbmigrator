@@ -19,9 +19,10 @@ type JsonMigration struct {
 }
 
 type JsonMigrationReport struct {
-	FileName  string `json:"fileName`
-	CreatedAt string `json:"createdAt`
-	Message   string `json:message`
+	FileName     string `json:"fileName`
+	CreatedAt    string `json:"createdAt`
+	ResultStatus string `json:"resultStatus`
+	Message      string `json:message`
 }
 
 func newJsonMigration() *JsonMigration {
@@ -120,15 +121,28 @@ func (m *JsonMigration) SetJsonFileName(filePath string) {
 	m.jsonReporFileName = filePath + "/migration_reports.json"
 }
 
-func (m *JsonMigration) AddToMigrationReport(fileName, message string) error {
+func (m *JsonMigration) AddToMigrationReport(fileName string, errorToLog error) error {
 	storeFileName := m.getJsonReportFileName()
+	message := "ok"
+	status := "success"
+	if errorToLog != nil {
+		message = errorToLog.Error()
+		status = "error"
+	}
+
 	file, err := os.OpenFile(storeFileName, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	newReportItem := JsonMigrationReport{FileName: fileName, CreatedAt: time.Now().Format("2006-01-02 15:04:05"), Message: message}
+	newReportItem := JsonMigrationReport{
+		FileName:     fileName,
+		ResultStatus: status,
+		CreatedAt:    time.Now().Format("2006-01-02 15:04:05"),
+		Message:      message,
+	}
+
 	newData, err := json.Marshal(newReportItem)
 	if err != nil {
 		return err
