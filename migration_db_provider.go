@@ -213,7 +213,7 @@ func (m *DbMigration) diverType() (string, error) {
 		return dbTypeFirebird, nil
 	}
 
-	return "", fmt.Errorf("The driver used %s does not match any known dirver by the application", driverType)
+	return "", fmt.Errorf("the driver used %s does not match any known dirver by the application", driverType)
 }
 
 func (m *DbMigration) GetJsonFileName() string {
@@ -221,6 +221,21 @@ func (m *DbMigration) GetJsonFileName() string {
 	return ""
 }
 
-func (m *DbMigration) SetJsonFileName(fileName string) {
+func (m *DbMigration) SetJsonFileName(filePath string) {
 	// dummy, not used in db version, need due to interface
+}
+
+func (m *DbMigration) AddToMigrationReport(fileName, message string) error {
+	sql := fmt.Sprintf(`INSERT INTO migration_reports  
+			(file_name, created_at, message)
+			VALUES (%s, %s, %s)`,
+		m.getBindingParameter(1),
+		m.getBindingParameter(2),
+		m.getBindingParameter(3),
+	)
+
+	cretedAt := time.Now().Format("2006-01-02 15:04:05")
+	_, err := m.db.Exec(sql, fileName, cretedAt, message)
+
+	return err
 }

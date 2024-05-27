@@ -3,16 +3,25 @@ package migrator
 import (
 	"encoding/json"
 	"io/ioutil"
+	"os"
 	"sort"
 	"time"
 )
 
-const migragionJsonFileName = "./migrations/migrations.json"
+const migrationJsonFileName = "./migrations/migrations.json"
+const migrationJsonReportFileName = "./migrations/migration_report.json"
 
 type JsonMigration struct {
-	data         map[string]string
-	timeString   string
-	jsonFileName string
+	data              map[string]string
+	timeString        string
+	jsonFileName      string
+	jsonReporFileName string
+}
+
+type JsonMigrationReport struct {
+	FileName  string `json:"fileName`
+	CreatedAt string `json:"createdAt`
+	Message   string `json:message`
 }
 
 func newJsonMigration() *JsonMigration {
@@ -38,7 +47,7 @@ func (m *JsonMigration) Migrations(isLatest bool) ([]string, error) {
 	}
 
 	for fileName, dateString := range m.data {
-		if dateString == latestDate || isLatest == false {
+		if dateString == latestDate || !isLatest {
 			filtered = append(filtered, fileName)
 		}
 	}
@@ -92,12 +101,51 @@ func (m *JsonMigration) MigrationExistsForFile(fileName string) bool {
 
 func (m *JsonMigration) GetJsonFileName() string {
 	if m.jsonFileName == "" {
-		return migragionJsonFileName
+		return migrationJsonFileName
 	}
 
 	return m.jsonFileName
 }
 
-func (m *JsonMigration) SetJsonFileName(fileName string) {
-	m.jsonFileName = fileName + "/migrations.json"
+func (m *JsonMigration) getJsonReportFileName() string {
+	if m.jsonFileName == "" {
+		return migrationJsonReportFileName
+	}
+
+	return m.jsonReporFileName
+}
+
+func (m *JsonMigration) SetJsonFileName(filePath string) {
+	m.jsonFileName = filePath + "/migrations.json"
+	m.jsonReporFileName = filePath + "/migration_reports.json"
+}
+
+func (m *JsonMigration) AddToMigrationReport(fileName, message string) error {
+	storeFileName := m.getJsonReportFileName()
+	file, err := os.OpenFile(storeFileName, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	newReportItem := JsonMigrationReport{FileName: fileName, CreatedAt: time.Now().Format("2006-01-02 15:04:05"), Message: message}
+	newData, err := json.Marshal(newReportItem)
+	if err != nil {
+		return err
+	}
+
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return err
+	}
+
+	if fileInfo.Size() > 0 {
+		newData = append([]byte(","), newData...)
+	}
+
+	if _, err := file.Write(newData); err != nil {
+		return err
+	}
+
+	return nil
 }

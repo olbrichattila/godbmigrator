@@ -207,6 +207,9 @@ func (m *migration) executeSqlFile(fileName string) (bool, error) {
 		if err != nil {
 			return false, err
 		}
+		m.migrationProvider.AddToMigrationReport(fileName, "success")
+	} else {
+		m.migrationProvider.AddToMigrationReport(fileName, err.Error())
 	}
 
 	return true, err
