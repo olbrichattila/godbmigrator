@@ -151,9 +151,15 @@ func (m *DbMigration) MigrationExistsForFile(fileName string) bool {
 }
 
 func (m *DbMigration) Init(createSqlProvider MigrationTableSqlProvider) error {
-	sql := createSqlProvider.CreateSql()
+	sql := createSqlProvider.CreateMigrationSql()
 
 	_, err := m.db.Exec(sql)
+	if err != nil {
+		return err
+	}
+
+	sql = createSqlProvider.CreateReportSql()
+	_, err = m.db.Exec(sql)
 
 	return err
 }
