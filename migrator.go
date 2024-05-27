@@ -21,10 +21,6 @@ type migration struct {
 	migrationFilePath string
 }
 
-func newMigrator(db *sql.DB) *migration {
-	return &migration{db: db}
-}
-
 func Rollback(
 	db *sql.DB,
 	migrationProvider MigrationProvider,
@@ -45,48 +41,6 @@ func Refresh(
 	}
 
 	return Migrate(db, migrationProvider, migrationFilePath, 0)
-}
-
-func rollback(
-	db *sql.DB,
-	migrationProvider MigrationProvider,
-	migrationFilePath string,
-	count int,
-	isCompleteRollback bool,
-) error {
-	var err error
-	m := newMigrator(db)
-	m.migrationFilePath = migrationFilePath
-	m.migrationProvider = migrationProvider
-	m.migrationProvider.SetJsonFilePath(migrationFilePath)
-	migrations, err := m.migrationProvider.Migrations(!isCompleteRollback)
-	if err != nil {
-		return err
-	}
-	if len(migrations) == 0 {
-		fmt.Println("Nothing to rollback")
-		return nil
-	}
-
-	rollbackCount := 0
-	for _, fileName := range migrations {
-		if count > 0 {
-			if rollbackCount == count {
-				break
-			}
-
-		}
-
-		err = m.executeRollbackSqlFile(fileName)
-		if err != nil {
-			return err
-		}
-		rollbackCount++
-	}
-
-	fmt.Printf("Rolled back %d items\n", rollbackCount)
-
-	return nil
 }
 
 func Migrate(
@@ -150,6 +104,51 @@ func AddNewMigrationFiles(migrationFilePath, customText string) error {
 	if err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func newMigrator(db *sql.DB) *migration {
+	return &migration{db: db}
+}
+
+func rollback(
+	db *sql.DB,
+	migrationProvider MigrationProvider,
+	migrationFilePath string,
+	count int,
+	isCompleteRollback bool,
+) error {
+	var err error
+	m := newMigrator(db)
+	m.migrationFilePath = migrationFilePath
+	m.migrationProvider = migrationProvider
+	m.migrationProvider.SetJsonFilePath(migrationFilePath)
+	migrations, err := m.migrationProvider.Migrations(!isCompleteRollback)
+	if err != nil {
+		return err
+	}
+	if len(migrations) == 0 {
+		fmt.Println("Nothing to rollback")
+		return nil
+	}
+
+	rollbackCount := 0
+	for _, fileName := range migrations {
+		if count > 0 {
+			if rollbackCount == count {
+				break
+			}
+		}
+
+		err = m.executeRollbackSqlFile(fileName)
+		if err != nil {
+			return err
+		}
+		rollbackCount++
+	}
+
+	fmt.Printf("Rolled back %d items\n", rollbackCount)
 
 	return nil
 }

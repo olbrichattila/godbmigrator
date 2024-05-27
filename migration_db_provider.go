@@ -257,7 +257,6 @@ func (m *DbMigration) AddToMigrationReport(fileName string, errorToLog error) er
 }
 
 func (m *DbMigration) Report() (string, error) {
-	// TODO
 	rows, err := m.db.Query(`SELECT  file_name, created_at, result_status, message FROM migration_reports`)
 	if err != nil {
 		return "", err

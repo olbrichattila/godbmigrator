@@ -49,27 +49,23 @@ func initFolder(fullPath string) error {
 }
 
 func copyFile(src, dst string) error {
-	// Open the source file
 	sourceFile, err := os.Open(src)
 	if err != nil {
 		return fmt.Errorf("failed to open source file: %w", err)
 	}
 	defer sourceFile.Close()
 
-	// Create the destination file, truncating it if it already exists
 	destinationFile, err := os.Create(dst)
 	if err != nil {
 		return fmt.Errorf("failed to create destination file: %w", err)
 	}
 	defer destinationFile.Close()
 
-	// Copy the contents from the source file to the destination file
 	_, err = io.Copy(destinationFile, sourceFile)
 	if err != nil {
 		return fmt.Errorf("failed to copy contents: %w", err)
 	}
 
-	// Flush the file content to disk
 	err = destinationFile.Sync()
 	if err != nil {
 		return fmt.Errorf("failed to sync destination file: %w", err)
@@ -79,10 +75,9 @@ func copyFile(src, dst string) error {
 }
 
 func haveReportrecord(db *sql.DB, fileName, createdAt, status, message string) error {
-	sql := fmt.Sprintf(`INSERT INTO migration_reports
+	sql := `INSERT INTO migration_reports
 			(file_name, created_at, result_status, message)
-			VALUES (?,?,?,?)`,
-	)
+			VALUES (?,?,?,?)`
 
 	_, err := db.Exec(sql, fileName, createdAt, status, message)
 
