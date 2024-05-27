@@ -16,7 +16,7 @@ func (p *FirebirdMigrationTableSqlProvider) CreateMigrationSql() string {
 func (p *FirebirdMigrationTableSqlProvider) CreateReportSql() string {
 	return `EXECUTE BLOCK AS BEGIN
 		if (not exists(select 1 from rdb$relations where rdb$relation_name = 'MIGRATION_REPORTS')) then
-		execute statement 'CREATE TABLE REPORTS (
+		execute statement 'CREATE TABLE MIGRATION_REPORTS (
 			file_name VARCHAR(35),
 			result_status VARCHAR(12),
 			created_at VARCHAR(35),
