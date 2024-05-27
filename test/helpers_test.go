@@ -2,6 +2,8 @@ package migrator_test
 
 import (
 	"database/sql"
+	"fmt"
+	"io"
 	"os"
 )
 
@@ -19,11 +21,17 @@ func tableCountInDatabase(db *sql.DB) (int, error) {
 
 	var count int
 	err := db.QueryRow(query).Scan(&count)
-	if err != nil {
-		return 0, err
-	}
 
-	return count, nil
+	return count, err
+}
+
+func rowCountInTable(db *sql.DB, tableName string) (int, error) {
+	query := "SELECT count(*) from " + tableName
+
+	var count int
+	err := db.QueryRow(query).Scan(&count)
+
+	return count, err
 }
 
 func resetJsonFile() error {
@@ -38,4 +46,40 @@ func initFolder(fullPath string) error {
 	}
 
 	return nil
+}
+
+func copyFile(src, dst string) error {
+	sourceFile, err := os.Open(src)
+	if err != nil {
+		return fmt.Errorf("failed to open source file: %w", err)
+	}
+	defer sourceFile.Close()
+
+	destinationFile, err := os.Create(dst)
+	if err != nil {
+		return fmt.Errorf("failed to create destination file: %w", err)
+	}
+	defer destinationFile.Close()
+
+	_, err = io.Copy(destinationFile, sourceFile)
+	if err != nil {
+		return fmt.Errorf("failed to copy contents: %w", err)
+	}
+
+	err = destinationFile.Sync()
+	if err != nil {
+		return fmt.Errorf("failed to sync destination file: %w", err)
+	}
+
+	return nil
+}
+
+func haveReportrecord(db *sql.DB, fileName, createdAt, status, message string) error {
+	sql := `INSERT INTO migration_reports
+			(file_name, created_at, result_status, message)
+			VALUES (?,?,?,?)`
+
+	_, err := db.Exec(sql, fileName, createdAt, status, message)
+
+	return err
 }

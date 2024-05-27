@@ -153,6 +153,26 @@ if err != nil {
 }
 ```
 
+
+## Migration report
+The appication stores a migration audiot report, where you can track rollback, migrations, errors thrown durring migration.
+Fetching the migratio report to a readable string:
+
+```
+migrationFilePath := "./migration"
+migrationProvider, err := migrator.NewMigrationProvider("db", db)
+if err != nil {
+    panic("Error: " + err.Error())
+}
+
+report, err := migrator.Report(db, migrationProvider, migrationFilePath)
+if err != nil {
+    panic("Error: " + err.Error())
+}
+
+fmt.Println(report)
+```
+
 ## Available make targets:
 ```
 make run

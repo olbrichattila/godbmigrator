@@ -39,7 +39,12 @@ func (t *DbTestSuite) TestDBMigratorMigrateAllTables() {
 	tableCount, err := tableCountInDatabase(t.db)
 	t.Nil(err)
 
-	t.Equal(6, tableCount)
+	t.Equal(7, tableCount)
+
+	reportCount, err := rowCountInTable(t.db, "migration_reports")
+	t.Nil(err)
+
+	t.Equal(5, reportCount)
 }
 
 func (t *DbTestSuite) TestDBMigratorMigrateSpeciedAmountOfTables() {
@@ -54,15 +59,7 @@ func (t *DbTestSuite) TestDBMigratorMigrateSpeciedAmountOfTables() {
 	tableCount, err := tableCountInDatabase(t.db)
 	t.Nil(err)
 
-	t.Equal(3, tableCount)
-
-	err = migrator.Migrate(t.db, migrationProvider, testFixtureFolder, migrateCount)
-	t.Nil(err)
-
-	tableCount, err = tableCountInDatabase(t.db)
-	t.Nil(err)
-
-	t.Equal(5, tableCount)
+	t.Equal(4, tableCount)
 
 	err = migrator.Migrate(t.db, migrationProvider, testFixtureFolder, migrateCount)
 	t.Nil(err)
@@ -71,6 +68,14 @@ func (t *DbTestSuite) TestDBMigratorMigrateSpeciedAmountOfTables() {
 	t.Nil(err)
 
 	t.Equal(6, tableCount)
+
+	err = migrator.Migrate(t.db, migrationProvider, testFixtureFolder, migrateCount)
+	t.Nil(err)
+
+	tableCount, err = tableCountInDatabase(t.db)
+	t.Nil(err)
+
+	t.Equal(7, tableCount)
 }
 
 func (t *DbTestSuite) TestDBMigratorRollbackAllTables() {
@@ -83,7 +88,7 @@ func (t *DbTestSuite) TestDBMigratorRollbackAllTables() {
 	tableCount, err := tableCountInDatabase(t.db)
 	t.Nil(err)
 
-	t.Equal(6, tableCount)
+	t.Equal(7, tableCount)
 
 	err = migrator.Rollback(t.db, migrationProvider, testFixtureFolder, 0)
 	t.Nil(err)
@@ -91,7 +96,7 @@ func (t *DbTestSuite) TestDBMigratorRollbackAllTables() {
 	tableCount, err = tableCountInDatabase(t.db)
 	t.Nil(err)
 
-	t.Equal(1, tableCount)
+	t.Equal(2, tableCount)
 }
 
 func (t *DbTestSuite) TestDBMigratorRollbackSpecificAmountOfTables() {
@@ -104,7 +109,7 @@ func (t *DbTestSuite) TestDBMigratorRollbackSpecificAmountOfTables() {
 	tableCount, err := tableCountInDatabase(t.db)
 	t.Nil(err)
 
-	t.Equal(6, tableCount)
+	t.Equal(7, tableCount)
 
 	err = migrator.Rollback(t.db, migrationProvider, testFixtureFolder, 2)
 	t.Nil(err)
@@ -112,7 +117,7 @@ func (t *DbTestSuite) TestDBMigratorRollbackSpecificAmountOfTables() {
 	tableCount, err = tableCountInDatabase(t.db)
 	t.Nil(err)
 
-	t.Equal(4, tableCount)
+	t.Equal(5, tableCount)
 
 	err = migrator.Rollback(t.db, migrationProvider, testFixtureFolder, 2)
 	t.Nil(err)
@@ -120,7 +125,7 @@ func (t *DbTestSuite) TestDBMigratorRollbackSpecificAmountOfTables() {
 	tableCount, err = tableCountInDatabase(t.db)
 	t.Nil(err)
 
-	t.Equal(2, tableCount)
+	t.Equal(3, tableCount)
 }
 
 func (t *DbTestSuite) TestDBMigratorRollsBackTablesInProperBatches() {
@@ -139,7 +144,7 @@ func (t *DbTestSuite) TestDBMigratorRollsBackTablesInProperBatches() {
 	tableCount, err := tableCountInDatabase(t.db)
 	t.Nil(err)
 
-	t.Equal(6, tableCount)
+	t.Equal(7, tableCount)
 
 	err = migrator.Rollback(t.db, migrationProvider, testFixtureFolder, 0)
 	t.Nil(err)
@@ -147,7 +152,15 @@ func (t *DbTestSuite) TestDBMigratorRollsBackTablesInProperBatches() {
 	tableCount, err = tableCountInDatabase(t.db)
 	t.Nil(err)
 
-	t.Equal(4, tableCount)
+	t.Equal(5, tableCount)
+
+	err = migrator.Rollback(t.db, migrationProvider, testFixtureFolder, 0)
+	t.Nil(err)
+
+	tableCount, err = tableCountInDatabase(t.db)
+	t.Nil(err)
+
+	t.Equal(3, tableCount)
 
 	err = migrator.Rollback(t.db, migrationProvider, testFixtureFolder, 0)
 	t.Nil(err)
@@ -156,14 +169,6 @@ func (t *DbTestSuite) TestDBMigratorRollsBackTablesInProperBatches() {
 	t.Nil(err)
 
 	t.Equal(2, tableCount)
-
-	err = migrator.Rollback(t.db, migrationProvider, testFixtureFolder, 0)
-	t.Nil(err)
-
-	tableCount, err = tableCountInDatabase(t.db)
-	t.Nil(err)
-
-	t.Equal(1, tableCount)
 }
 
 func (t *DbTestSuite) TestDBRefresh() {
@@ -176,7 +181,7 @@ func (t *DbTestSuite) TestDBRefresh() {
 	tableCount, err := tableCountInDatabase(t.db)
 	t.Nil(err)
 
-	t.Equal(4, tableCount)
+	t.Equal(5, tableCount)
 
 	err = migrator.Refresh(t.db, migrationProvider, testFixtureFolder)
 	t.Nil(err)
@@ -184,5 +189,5 @@ func (t *DbTestSuite) TestDBRefresh() {
 	tableCount, err = tableCountInDatabase(t.db)
 	t.Nil(err)
 
-	t.Equal(6, tableCount)
+	t.Equal(7, tableCount)
 }

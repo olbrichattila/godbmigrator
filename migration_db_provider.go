@@ -22,6 +22,13 @@ type DbMigration struct {
 	sqlBindingParameter string
 }
 
+type reportRow struct {
+	FileName     string
+	CreatedAt    string
+	ResultStatus string
+	Message      string
+}
+
 func newDbMigration(db *sql.DB) (*DbMigration, error) {
 	dbMigration := &DbMigration{db: db}
 	dbMigration.ResetDate()
@@ -151,9 +158,15 @@ func (m *DbMigration) MigrationExistsForFile(fileName string) bool {
 }
 
 func (m *DbMigration) Init(createSqlProvider MigrationTableSqlProvider) error {
-	sql := createSqlProvider.CreateSql()
+	sql := createSqlProvider.CreateMigrationSql()
 
 	_, err := m.db.Exec(sql)
+	if err != nil {
+		return err
+	}
+
+	sql = createSqlProvider.CreateReportSql()
+	_, err = m.db.Exec(sql)
 
 	return err
 }
@@ -207,7 +220,7 @@ func (m *DbMigration) diverType() (string, error) {
 		return dbTypeFirebird, nil
 	}
 
-	return "", fmt.Errorf("The driver used %s does not match any known dirver by the application", driverType)
+	return "", fmt.Errorf("the driver used %s does not match any known dirver by the application", driverType)
 }
 
 func (m *DbMigration) GetJsonFileName() string {
@@ -215,6 +228,54 @@ func (m *DbMigration) GetJsonFileName() string {
 	return ""
 }
 
-func (m *DbMigration) SetJsonFileName(fileName string) {
+func (m *DbMigration) SetJsonFilePath(filePath string) {
 	// dummy, not used in db version, need due to interface
+}
+
+func (m *DbMigration) AddToMigrationReport(fileName string, errorToLog error) error {
+	sql := fmt.Sprintf(`INSERT INTO migration_reports
+			(file_name, created_at, result_status, message)
+			VALUES (%s, %s, %s, %s)`,
+		m.getBindingParameter(1),
+		m.getBindingParameter(2),
+		m.getBindingParameter(3),
+		m.getBindingParameter(4),
+	)
+
+	message := "ok"
+	status := "success"
+	if errorToLog != nil {
+		message = errorToLog.Error()
+		status = "error"
+	}
+
+	createdAt := time.Now().Format("2006-01-02 15:04:05")
+
+	_, err := m.db.Exec(sql, fileName, createdAt, status, message)
+
+	return err
+}
+
+func (m *DbMigration) Report() (string, error) {
+	rows, err := m.db.Query(`SELECT  file_name, created_at, result_status, message FROM migration_reports`)
+	if err != nil {
+		return "", err
+	}
+	defer rows.Close()
+
+	var row reportRow
+	var builder strings.Builder
+	for rows.Next() {
+		rows.Scan(&row.FileName, &row.CreatedAt, &row.ResultStatus, &row.Message)
+		str := fmt.Sprintf(
+			"Created at: %s, File Name: %s, Status: %s, Message: %s\n",
+			row.CreatedAt,
+			row.FileName,
+			row.ResultStatus,
+			row.Message,
+		)
+		builder.WriteString(str)
+	}
+
+	return builder.String(), nil
 }

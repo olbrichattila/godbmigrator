@@ -90,7 +90,6 @@ func checkStringInFileNames(dirPath, searchString string) (bool, error) {
 	for _, file := range files {
 		if !strings.Contains(string(file.Name()), searchString) {
 			return false, nil
-
 		}
 	}
 

@@ -21,10 +21,6 @@ type migration struct {
 	migrationFilePath string
 }
 
-func newMigrator(db *sql.DB) *migration {
-	return &migration{db: db}
-}
-
 func Rollback(
 	db *sql.DB,
 	migrationProvider MigrationProvider,
@@ -47,48 +43,6 @@ func Refresh(
 	return Migrate(db, migrationProvider, migrationFilePath, 0)
 }
 
-func rollback(
-	db *sql.DB,
-	migrationProvider MigrationProvider,
-	migrationFilePath string,
-	count int,
-	isCompleteRollback bool,
-) error {
-	var err error
-	m := newMigrator(db)
-	m.migrationFilePath = migrationFilePath
-	m.migrationProvider = migrationProvider
-	m.migrationProvider.SetJsonFileName(migrationFilePath)
-	migrations, err := m.migrationProvider.Migrations(!isCompleteRollback)
-	if err != nil {
-		return err
-	}
-	if len(migrations) == 0 {
-		fmt.Println("Nothing to rollback")
-		return nil
-	}
-
-	rollbackCount := 0
-	for _, fileName := range migrations {
-		if count > 0 {
-			if rollbackCount == count {
-				break
-			}
-
-		}
-
-		err = m.executeRollbackSqlFile(fileName)
-		if err != nil {
-			return err
-		}
-		rollbackCount++
-	}
-
-	fmt.Printf("Rolled back %d items\n", rollbackCount)
-
-	return nil
-}
-
 func Migrate(
 	db *sql.DB,
 	migrationProvider MigrationProvider,
@@ -98,7 +52,7 @@ func Migrate(
 	m := newMigrator(db)
 	m.migrationFilePath = migrationFilePath
 	m.migrationProvider = migrationProvider
-	m.migrationProvider.SetJsonFileName(migrationFilePath)
+	m.migrationProvider.SetJsonFilePath(migrationFilePath)
 	m.migrationProvider.ResetDate()
 	fileNames, err := m.orderedMigrationFiles()
 	if err != nil {
@@ -127,6 +81,19 @@ func Migrate(
 	return nil
 }
 
+func Report(
+	db *sql.DB,
+	migrationProvider MigrationProvider,
+	migrationFilePath string,
+) (string, error) {
+
+	m := newMigrator(db)
+	m.migrationFilePath = migrationFilePath
+	m.migrationProvider = migrationProvider
+	m.migrationProvider.SetJsonFilePath(migrationFilePath)
+	return m.migrationProvider.Report()
+}
+
 func AddNewMigrationFiles(migrationFilePath, customText string) error {
 	var err error
 	err = createNewMigrationFiles(migrationFilePath, customText, false)
@@ -137,6 +104,51 @@ func AddNewMigrationFiles(migrationFilePath, customText string) error {
 	if err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func newMigrator(db *sql.DB) *migration {
+	return &migration{db: db}
+}
+
+func rollback(
+	db *sql.DB,
+	migrationProvider MigrationProvider,
+	migrationFilePath string,
+	count int,
+	isCompleteRollback bool,
+) error {
+	var err error
+	m := newMigrator(db)
+	m.migrationFilePath = migrationFilePath
+	m.migrationProvider = migrationProvider
+	m.migrationProvider.SetJsonFilePath(migrationFilePath)
+	migrations, err := m.migrationProvider.Migrations(!isCompleteRollback)
+	if err != nil {
+		return err
+	}
+	if len(migrations) == 0 {
+		fmt.Println("Nothing to rollback")
+		return nil
+	}
+
+	rollbackCount := 0
+	for _, fileName := range migrations {
+		if count > 0 {
+			if rollbackCount == count {
+				break
+			}
+		}
+
+		err = m.executeRollbackSqlFile(fileName)
+		if err != nil {
+			return err
+		}
+		rollbackCount++
+	}
+
+	fmt.Printf("Rolled back %d items\n", rollbackCount)
 
 	return nil
 }
@@ -209,6 +221,8 @@ func (m *migration) executeSqlFile(fileName string) (bool, error) {
 		}
 	}
 
+	m.migrationProvider.AddToMigrationReport(fileName, err)
+
 	return true, err
 }
 
@@ -273,7 +287,7 @@ func (m *migration) resolveRollbackFile(migrationFileName string) (string, error
 	})
 
 	if !fileExists(m.migrationFilePath + "/" + result) {
-		return "", fmt.Errorf("File does not %s exists", result)
+		return "", fmt.Errorf("file does not %s exists", result)
 	}
 
 	return result, nil
