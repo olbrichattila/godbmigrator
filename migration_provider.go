@@ -12,8 +12,9 @@ type MigrationProvider interface {
 	MigrationExistsForFile(string) bool
 	ResetDate()
 	GetJsonFileName() string
-	SetJsonFileName(string)
+	SetJsonFilePath(string)
 	AddToMigrationReport(string, error) error
+	Report() (string, error)
 }
 
 func NewMigrationProvider(providerType string, db *sql.DB) (MigrationProvider, error) {

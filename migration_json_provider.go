@@ -2,9 +2,11 @@ package migrator
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -116,7 +118,7 @@ func (m *JsonMigration) getJsonReportFileName() string {
 	return m.jsonReporFileName
 }
 
-func (m *JsonMigration) SetJsonFileName(filePath string) {
+func (m *JsonMigration) SetJsonFilePath(filePath string) {
 	m.jsonFileName = filePath + "/migrations.json"
 	m.jsonReporFileName = filePath + "/migration_reports.json"
 }
@@ -162,4 +164,52 @@ func (m *JsonMigration) AddToMigrationReport(fileName string, errorToLog error) 
 	}
 
 	return nil
+}
+
+func (m *JsonMigration) Report() (string, error) {
+	// TODO
+
+	storeFileName := m.getJsonReportFileName()
+
+	_, err := os.Stat(storeFileName)
+	if os.IsNotExist(err) {
+		return "", nil
+	}
+
+	// Open the JSON file
+	jsonFile, err := os.Open(storeFileName)
+	if err != nil {
+		return "", err
+	}
+
+	defer jsonFile.Close()
+
+	// Read the JSON file
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	byteValue = append([]byte{'['}, byteValue...)
+	byteValue = append(byteValue, ']')
+
+	if err != nil {
+		return "", err
+	}
+
+	var collection []JsonMigrationReport
+	err = json.Unmarshal(byteValue, &collection)
+	if err != nil {
+		return "", err
+	}
+
+	var builder strings.Builder
+	for _, item := range collection {
+		str := fmt.Sprintf(
+			"Created at: %s, File Name: %s, Status: %s, Message: %s\n",
+			item.CreatedAt,
+			item.FileName,
+			item.ResultStatus,
+			item.Message,
+		)
+		builder.WriteString(str)
+	}
+
+	return builder.String(), nil
 }

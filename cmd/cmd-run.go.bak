@@ -1,7 +1,11 @@
 package main
 
+// rename cmd.go to bak, then rename this to .go and test your changes
+// don't forget to go mod tidy before pushing back to git
 import (
 	"database/sql"
+	"flag"
+	"fmt"
 
 	_ "github.com/mattn/go-sqlite3"
 	_ "github.com/nakagami/firebirdsql"
@@ -9,34 +13,88 @@ import (
 )
 
 func main() {
-	// rename cmd.go to bak, then rename this to .go and test your changes
-	// don't forget to go mod tidy before pushing back to git
-
-	// db, _ := sql.Open("sqlite3", "./data/data.db")
-	db, _ := connectToDatabase()
 	migrationFilePath := "./migrations"
-	migrationProvider, err := migrator.NewMigrationProvider("db", db)
-	// migrationProvider, err := migrator.NewMigrationProvider("json", db)
+	dbType, provider, function, count := params()
+
+	fmt.Printf("Running with %s, %s, %s, %d\n", dbType, provider, function, count)
+
+	db, err := getConnection(dbType)
 	if err != nil {
-		panic("Error: " + err.Error())
+		panic(err.Error())
+	}
+	defer db.Close()
+
+	migrationProvider, err := migrator.NewMigrationProvider(provider, db)
+	if err != nil {
+		panic(err.Error())
 	}
 
-	// comment in what you are testing
-	// err = migrator.Refresh(db, migrationProvider, migrationFilePath)
-	// err = migrator.Migrate(db, migrationProvider, migrationFilePath, 0)
-	err = migrator.Rollback(db, migrationProvider, migrationFilePath, 0)
+	if err != nil {
+		panic(err.Error())
+	}
 
-	//err := migrator.AddNewMigrationFiles("./test_fixtures", "fixture")
+	switch function {
+	case "migrate":
+		err = migrator.Migrate(db, migrationProvider, migrationFilePath, count)
+	case "rollback":
+		err = migrator.Rollback(db, migrationProvider, migrationFilePath, count)
+	case "refresh":
+		err = migrator.Refresh(db, migrationProvider, migrationFilePath)
+	case "report":
+		report, err := migrator.Report(db, migrationProvider, migrationFilePath)
+		if err != nil {
+			panic("Error: " + err.Error())
+		}
+		fmt.Print(report)
+	default:
+		panic("Unknown function " + function)
+	}
+
 	if err != nil {
 		panic("Error: " + err.Error())
 	}
 }
 
-func connectToDatabase() (*sql.DB, error) {
+func params() (string, string, string, int) {
+	db := flag.String("db", "sqlite", "Database driver name")
+	function := flag.String("function", "migrate", "function=migrate/rollback/report")
+	count := flag.Int("count", 0, "count=1")
+	provider := flag.String("provider", "db", "provider=db/json")
+	flag.Parse()
+
+	return *db, *provider, *function, *count
+}
+
+func connectToFirebaseDatabase() (*sql.DB, error) {
 	dataSourceName := "SYSDBA:masterkey@localhost:3050/opt/firebird/examples/empbuild/employee.fdb"
-	db, err := sql.Open("firebirdsql", dataSourceName)
-	if err != nil {
-		return nil, err
+
+	return sql.Open("firebirdsql", dataSourceName)
+}
+
+func connectToPostresql() (*sql.DB, error) {
+	connectionString := "user=root password=root dbname=root sslmode=disable"
+
+	return sql.Open("postgres", connectionString)
+}
+
+func connectToSqLite() (*sql.DB, error) {
+	return sql.Open("sqlite3", "./data/data.db")
+}
+
+func getConnection(dbType string) (*sql.DB, error) {
+	var conn *sql.DB
+	var err error
+
+	switch dbType {
+	case "sqlite":
+		conn, err = connectToSqLite()
+	case "firebase":
+		conn, err = connectToFirebaseDatabase()
+	case "postgresql":
+		conn, err = connectToPostresql()
+	default:
+		return nil, fmt.Errorf("invalid dbtype " + dbType)
 	}
-	return db, nil
+
+	return conn, err
 }

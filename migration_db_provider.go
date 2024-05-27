@@ -22,6 +22,13 @@ type DbMigration struct {
 	sqlBindingParameter string
 }
 
+type reportRow struct {
+	FileName     string
+	CreatedAt    string
+	ResultStatus string
+	Message      string
+}
+
 func newDbMigration(db *sql.DB) (*DbMigration, error) {
 	dbMigration := &DbMigration{db: db}
 	dbMigration.ResetDate()
@@ -221,7 +228,7 @@ func (m *DbMigration) GetJsonFileName() string {
 	return ""
 }
 
-func (m *DbMigration) SetJsonFileName(filePath string) {
+func (m *DbMigration) SetJsonFilePath(filePath string) {
 	// dummy, not used in db version, need due to interface
 }
 
@@ -247,4 +254,29 @@ func (m *DbMigration) AddToMigrationReport(fileName string, errorToLog error) er
 	_, err := m.db.Exec(sql, fileName, createdAt, status, message)
 
 	return err
+}
+
+func (m *DbMigration) Report() (string, error) {
+	// TODO
+	rows, err := m.db.Query(`SELECT  file_name, created_at, result_status, message FROM migration_reports`)
+	if err != nil {
+		return "", err
+	}
+	defer rows.Close()
+
+	var row reportRow
+	var builder strings.Builder
+	for rows.Next() {
+		rows.Scan(&row.FileName, &row.CreatedAt, &row.ResultStatus, &row.Message)
+		str := fmt.Sprintf(
+			"Created at: %s, File Name: %s, Status: %s, Message: %s\n",
+			row.CreatedAt,
+			row.FileName,
+			row.ResultStatus,
+			row.Message,
+		)
+		builder.WriteString(str)
+	}
+
+	return builder.String(), nil
 }

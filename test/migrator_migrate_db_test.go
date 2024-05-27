@@ -40,6 +40,11 @@ func (t *DbTestSuite) TestDBMigratorMigrateAllTables() {
 	t.Nil(err)
 
 	t.Equal(7, tableCount)
+
+	reportCount, err := rowCountInTable(t.db, "migration_reports")
+	t.Nil(err)
+
+	t.Equal(5, reportCount)
 }
 
 func (t *DbTestSuite) TestDBMigratorMigrateSpeciedAmountOfTables() {

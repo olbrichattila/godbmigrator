@@ -58,7 +58,7 @@ func rollback(
 	m := newMigrator(db)
 	m.migrationFilePath = migrationFilePath
 	m.migrationProvider = migrationProvider
-	m.migrationProvider.SetJsonFileName(migrationFilePath)
+	m.migrationProvider.SetJsonFilePath(migrationFilePath)
 	migrations, err := m.migrationProvider.Migrations(!isCompleteRollback)
 	if err != nil {
 		return err
@@ -98,7 +98,7 @@ func Migrate(
 	m := newMigrator(db)
 	m.migrationFilePath = migrationFilePath
 	m.migrationProvider = migrationProvider
-	m.migrationProvider.SetJsonFileName(migrationFilePath)
+	m.migrationProvider.SetJsonFilePath(migrationFilePath)
 	m.migrationProvider.ResetDate()
 	fileNames, err := m.orderedMigrationFiles()
 	if err != nil {
@@ -125,6 +125,19 @@ func Migrate(
 	fmt.Printf("Migrated %d items\n", migrateCount)
 
 	return nil
+}
+
+func Report(
+	db *sql.DB,
+	migrationProvider MigrationProvider,
+	migrationFilePath string,
+) (string, error) {
+
+	m := newMigrator(db)
+	m.migrationFilePath = migrationFilePath
+	m.migrationProvider = migrationProvider
+	m.migrationProvider.SetJsonFilePath(migrationFilePath)
+	return m.migrationProvider.Report()
 }
 
 func AddNewMigrationFiles(migrationFilePath, customText string) error {
