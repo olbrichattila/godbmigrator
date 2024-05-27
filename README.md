@@ -187,10 +187,6 @@ make run-test
 - PostgresQl
 - Firebird / Interbase
 
-
-
-
-
 ## To be expected in next version
 
 - Store what was migrated as well even when migration error happened and rolled back

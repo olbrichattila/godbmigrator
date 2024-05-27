@@ -167,8 +167,6 @@ func (m *JsonMigration) AddToMigrationReport(fileName string, errorToLog error) 
 }
 
 func (m *JsonMigration) Report() (string, error) {
-	// TODO
-
 	storeFileName := m.getJsonReportFileName()
 
 	_, err := os.Stat(storeFileName)
