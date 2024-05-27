@@ -85,7 +85,7 @@ func (m *migration) executeRollbackSqlFile(fileName string) error {
 		m.migrationProvider.RemoveFromMigration(fileName)
 	}
 
-	m.migrationProvider.AddToMigrationReport(fileName, err)
+	m.migrationProvider.AddToMigrationReport(rollbackFileName, err)
 
 	return err
 }
