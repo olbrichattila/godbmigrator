@@ -11,25 +11,25 @@ import (
 // Rollback rolls back last migrated items or all if count is 0
 func Rollback(
 	db *sql.DB,
-	MigrationProvider MigrationProvider,
+	migrationProvider MigrationProvider,
 	migrationFilePath string,
 	count int,
 ) error {
-	return rollback(db, MigrationProvider, migrationFilePath, count, false)
+	return rollback(db, migrationProvider, migrationFilePath, count, false)
 }
 
 // Refresh runs a full rollback and migrate again
 func Refresh(
 	db *sql.DB,
-	MigrationProvider MigrationProvider,
+	migrationProvider MigrationProvider,
 	migrationFilePath string,
 ) error {
-	err := rollback(db, MigrationProvider, migrationFilePath, 0, true)
+	err := rollback(db, migrationProvider, migrationFilePath, 0, true)
 	if err != nil {
 		return err
 	}
 
-	return Migrate(db, MigrationProvider, migrationFilePath, 0)
+	return Migrate(db, migrationProvider, migrationFilePath, 0)
 }
 
 // Migrate execute migrations
@@ -74,13 +74,13 @@ func Migrate(
 // Report return a report of the alredy executed migrations
 func Report(
 	db *sql.DB,
-	MigrationProvider MigrationProvider,
+	migrationProvider MigrationProvider,
 	migrationFilePath string,
 ) (string, error) {
 
 	m := newMigrator(db)
 	m.migrationFilePath = migrationFilePath
-	m.MigrationProvider = MigrationProvider
+	m.MigrationProvider = migrationProvider
 	m.MigrationProvider.SetJSONFilePath(migrationFilePath)
 	return m.MigrationProvider.Report()
 }

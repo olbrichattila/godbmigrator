@@ -21,6 +21,9 @@ func tableCountInDatabase(db *sql.DB) (int, error) {
 
 	var count int
 	err := db.QueryRow(query).Scan(&count)
+	if err != nil {
+		return 0, nil
+	}
 
 	return count, err
 }
@@ -30,6 +33,9 @@ func rowCountInTable(db *sql.DB, tableName string) (int, error) {
 
 	var count int
 	err := db.QueryRow(query).Scan(&count)
+	if err != nil {
+		return 0, nil
+	}
 
 	return count, err
 }

@@ -155,7 +155,7 @@ func (m *dbMigration) MigrationExistsForFile(fileName string) (bool, error) {
 	var count string
 	err := row.Scan(&count)
 	if err != nil {
-		return false, err
+		return false, nil
 	}
 
 	cnt, err := strconv.Atoi(count)
@@ -189,6 +189,9 @@ func (m *dbMigration) lastMigrationDate() (string, error) {
 	row := m.db.QueryRow(sql)
 	var maxdate string
 	err := row.Scan(&maxdate)
+	if err != nil {
+		return "", nil
+	}
 
 	return maxdate, err
 }
