@@ -114,7 +114,7 @@ func (m *dbMigration) allMigrations() (*sql.Rows, error) {
 	)
 }
 
-func (m *dbMigration) addToMigration(fileName string) error {
+func (m *dbMigration) AddToMigration(fileName string) error {
 	sql := fmt.Sprintf(`INSERT INTO migrations  
 			(file_name, created_at)
 			VALUES (%s, %s)`,
@@ -242,7 +242,7 @@ func (m *dbMigration) SetJSONFilePath(_ string) {
 	// dummy, not used in db version, need due to interface
 }
 
-func (m *dbMigration) addToMigrationReport(fileName string, errorToLog error) error {
+func (m *dbMigration) AddToMigrationReport(fileName string, errorToLog error) error {
 	sql := fmt.Sprintf(`INSERT INTO migration_reports
 			(file_name, created_at, result_status, message)
 			VALUES (%s, %s, %s, %s)`,

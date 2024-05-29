@@ -59,13 +59,13 @@ func (m *migration) executeSQLFile(fileName string) (bool, error) {
 
 	err = m.executeSQL(string(content))
 	if err == nil {
-		err = m.MigrationProvider.addToMigration(fileName)
+		err = m.MigrationProvider.AddToMigration(fileName)
 		if err != nil {
 			return false, err
 		}
 	}
 
-	_ = m.MigrationProvider.addToMigrationReport(fileName, err)
+	_ = m.MigrationProvider.AddToMigrationReport(fileName, err)
 
 	return true, err
 }
@@ -96,7 +96,7 @@ func (m *migration) executeRollbackSQLFile(fileName string) error {
 		}
 	}
 
-	err = m.MigrationProvider.addToMigrationReport(rollbackFileName, err)
+	err = m.MigrationProvider.AddToMigrationReport(rollbackFileName, err)
 
 	return err
 }

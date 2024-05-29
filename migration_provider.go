@@ -8,13 +8,13 @@ import (
 // MigrationProvider is the base migrator interface
 type MigrationProvider interface {
 	migrations(bool) ([]string, error)
-	addToMigration(string) error
+	AddToMigration(string) error
 	removeFromMigration(string) error
 	migrationExistsForFile(string) (bool, error)
 	resetDate()
 	getJSONFileName() string
 	SetJSONFilePath(string)
-	addToMigrationReport(string, error) error
+	AddToMigrationReport(string, error) error
 	Report() (string, error)
 }
 

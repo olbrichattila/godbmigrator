@@ -90,7 +90,7 @@ func (m *jsonMigration) saveMigrationFile() error {
 	return ioutil.WriteFile(jsonFileName, jsonData, 0644)
 }
 
-func (m *jsonMigration) addToMigration(fileName string) error {
+func (m *jsonMigration) AddToMigration(fileName string) error {
 	m.data[fileName] = m.timeString
 
 	return m.saveMigrationFile()
@@ -127,7 +127,7 @@ func (m *jsonMigration) SetJSONFilePath(filePath string) {
 	m.jsonReporFileName = filePath + "/migration_reports.json"
 }
 
-func (m *jsonMigration) addToMigrationReport(fileName string, errorToLog error) error {
+func (m *jsonMigration) AddToMigrationReport(fileName string, errorToLog error) error {
 	storeFileName := m.getJSONReportFileName()
 	message := "ok"
 	status := "success"
