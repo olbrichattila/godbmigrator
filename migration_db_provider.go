@@ -31,7 +31,7 @@ type reportRow struct {
 
 func newDbMigration(db *sql.DB) (*DbMigration, error) {
 	dbMigration := &DbMigration{db: db}
-	dbMigration.ResetDate()
+	dbMigration.resetDate()
 	driverType, err := dbMigration.diverType()
 	if err != nil {
 		return nil, err
@@ -49,16 +49,20 @@ func newDbMigration(db *sql.DB) (*DbMigration, error) {
 	return dbMigration, nil
 }
 
-func (m *DbMigration) ResetDate() {
+func (m *DbMigration) resetDate() {
 	m.timeString = time.Now().Format("2006-01-02 15:04:05")
 }
 
-func (m *DbMigration) Migrations(isLatest bool) ([]string, error) {
+func (m *DbMigration) migrations(isLatest bool) ([]string, error) {
 	var migrationList []string
 	var rows *sql.Rows
 	var err error
 
-	lastMigrationDate := m.lastMigrationDate()
+	lastMigrationDate, err := m.lastMigrationDate()
+	if err != nil {
+		return nil, err
+	}
+
 	if lastMigrationDate == "" {
 		return migrationList, nil
 	}
@@ -78,7 +82,10 @@ func (m *DbMigration) Migrations(isLatest bool) ([]string, error) {
 	if err == nil {
 		var migration string
 		for rows.Next() {
-			rows.Scan(&migration)
+			err := rows.Scan(&migration)
+			if err != nil {
+				return nil, err
+			}
 			migrationList = append(migrationList, migration)
 		}
 
@@ -107,7 +114,7 @@ func (m *DbMigration) allMigrations() (*sql.Rows, error) {
 	)
 }
 
-func (m *DbMigration) AddToMigration(fileName string) error {
+func (m *DbMigration) addToMigration(fileName string) error {
 	sql := fmt.Sprintf(`INSERT INTO migrations  
 			(file_name, created_at)
 			VALUES (%s, %s)`,
@@ -121,7 +128,7 @@ func (m *DbMigration) AddToMigration(fileName string) error {
 
 }
 
-func (m *DbMigration) RemoveFromMigration(fileName string) error {
+func (m *DbMigration) removeFromMigration(fileName string) error {
 	sql := fmt.Sprintf(`UPDATE migrations 
 			SET deleted_at = %s
 			WHERE file_name = %s
@@ -135,7 +142,7 @@ func (m *DbMigration) RemoveFromMigration(fileName string) error {
 	return err
 }
 
-func (m *DbMigration) MigrationExistsForFile(fileName string) bool {
+func (m *DbMigration) migrationExistsForFile(fileName string) (bool, error) {
 	sql := fmt.Sprintf(`SELECT count(*) as cnt
 			FROM migrations
 			WHERE file_name = %s
@@ -146,15 +153,18 @@ func (m *DbMigration) MigrationExistsForFile(fileName string) bool {
 	row := m.db.QueryRow(sql, fileName)
 
 	var count string
-	row.Scan(&count)
+	err := row.Scan(&count)
+	if err != nil {
+		return false, err
+	}
 
 	cnt, err := strconv.Atoi(count)
 
 	if err != nil {
-		return false
+		return false, nil
 	}
 
-	return cnt > 0
+	return cnt > 0, nil
 }
 
 func (m *DbMigration) Init(createSqlProvider MigrationTableSqlProvider) error {
@@ -171,16 +181,16 @@ func (m *DbMigration) Init(createSqlProvider MigrationTableSqlProvider) error {
 	return err
 }
 
-func (m *DbMigration) lastMigrationDate() string {
+func (m *DbMigration) lastMigrationDate() (string, error) {
 	sql := `SELECT max(created_at) as latest_migration
 			FROM migrations
 			WHERE deleted_at IS NULL`
 
 	row := m.db.QueryRow(sql)
 	var maxdate string
-	row.Scan(&maxdate)
+	err := row.Scan(&maxdate)
 
-	return maxdate
+	return maxdate, err
 }
 
 func (m *DbMigration) setSqlBindingParameter(driverType string) {
@@ -223,7 +233,7 @@ func (m *DbMigration) diverType() (string, error) {
 	return "", fmt.Errorf("the driver used %s does not match any known dirver by the application", driverType)
 }
 
-func (m *DbMigration) GetJsonFileName() string {
+func (m *DbMigration) getJsonFileName() string {
 	// dummy, not used in db version, need due to interface
 	return ""
 }
@@ -266,7 +276,10 @@ func (m *DbMigration) Report() (string, error) {
 	var row reportRow
 	var builder strings.Builder
 	for rows.Next() {
-		rows.Scan(&row.FileName, &row.CreatedAt, &row.ResultStatus, &row.Message)
+		err := rows.Scan(&row.FileName, &row.CreatedAt, &row.ResultStatus, &row.Message)
+		if err != nil {
+			return "", err
+		}
 		str := fmt.Sprintf(
 			"Created at: %s, File Name: %s, Status: %s, Message: %s\n",
 			row.CreatedAt,

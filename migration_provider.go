@@ -6,12 +6,12 @@ import (
 )
 
 type MigrationProvider interface {
-	Migrations(bool) ([]string, error)
-	AddToMigration(string) error
-	RemoveFromMigration(string) error
-	MigrationExistsForFile(string) bool
-	ResetDate()
-	GetJsonFileName() string
+	migrations(bool) ([]string, error)
+	addToMigration(string) error
+	removeFromMigration(string) error
+	migrationExistsForFile(string) (bool, error)
+	resetDate()
+	getJsonFileName() string
 	SetJsonFilePath(string)
 	AddToMigrationReport(string, error) error
 	Report() (string, error)
@@ -20,13 +20,9 @@ type MigrationProvider interface {
 func NewMigrationProvider(providerType string, db *sql.DB) (MigrationProvider, error) {
 	switch providerType {
 	case "json":
-		return newJsonMigration(), nil
+		return newJsonMigration()
 	case "db":
-		dbMigration, err := newDbMigration(db)
-		if err != nil {
-			return nil, err
-		}
-		return dbMigration, nil
+		return newDbMigration(db)
 	default:
 		return nil, fmt.Errorf("invalid migration provider type: %s", providerType)
 	}

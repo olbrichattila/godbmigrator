@@ -13,33 +13,33 @@ import (
 const migrationJsonFileName = "./migrations/migrations.json"
 const migrationJsonReportFileName = "./migrations/migration_report.json"
 
-type JsonMigration struct {
+type jsonMigration struct {
 	data              map[string]string
 	timeString        string
 	jsonFileName      string
 	jsonReporFileName string
 }
 
-type JsonMigrationReport struct {
-	FileName     string `json:"fileName`
-	CreatedAt    string `json:"createdAt`
-	ResultStatus string `json:"resultStatus`
-	Message      string `json:message`
+type jsonMigrationReport struct {
+	FileName     string `json:"fileName"`
+	CreatedAt    string `json:"createdAt"`
+	ResultStatus string `json:"resultStatus"`
+	Message      string `json:"message"`
 }
 
-func newJsonMigration() *JsonMigration {
-	jsonMigration := &JsonMigration{}
-	jsonMigration.ResetDate()
-	jsonMigration.loadMigrationFile()
+func newJsonMigration() (*jsonMigration, error) {
+	jsonMigration := &jsonMigration{}
+	jsonMigration.resetDate()
+	err := jsonMigration.loadMigrationFile()
 
-	return jsonMigration
+	return jsonMigration, err
 }
 
-func (m *JsonMigration) ResetDate() {
+func (m *jsonMigration) resetDate() {
 	m.timeString = time.Now().Format("2006-01-02 15:04:05")
 }
 
-func (m *JsonMigration) Migrations(isLatest bool) ([]string, error) {
+func (m *jsonMigration) migrations(isLatest bool) ([]string, error) {
 	var latestDate string
 	var filtered []string
 
@@ -60,9 +60,13 @@ func (m *JsonMigration) Migrations(isLatest bool) ([]string, error) {
 	return filtered, nil
 }
 
-func (m *JsonMigration) loadMigrationFile() error {
+func (m *jsonMigration) loadMigrationFile() error {
 	m.data = make(map[string]string)
-	jsonFileName := m.GetJsonFileName()
+	jsonFileName := m.getJsonFileName()
+	if !fileExists(jsonFileName) {
+		return nil
+	}
+
 	jsonData, err := ioutil.ReadFile(jsonFileName)
 	if err != nil {
 		return err
@@ -76,33 +80,33 @@ func (m *JsonMigration) loadMigrationFile() error {
 	return nil
 }
 
-func (m *JsonMigration) saveMigrationFile() error {
+func (m *jsonMigration) saveMigrationFile() error {
 	jsonData, err := json.Marshal(&m.data)
 	if err != nil {
 		return err
 	}
 
-	jsonFileName := m.GetJsonFileName()
+	jsonFileName := m.getJsonFileName()
 	return ioutil.WriteFile(jsonFileName, jsonData, 0644)
 }
 
-func (m *JsonMigration) AddToMigration(fileName string) error {
+func (m *jsonMigration) addToMigration(fileName string) error {
 	m.data[fileName] = m.timeString
 
 	return m.saveMigrationFile()
 }
 
-func (m *JsonMigration) RemoveFromMigration(fileName string) error {
+func (m *jsonMigration) removeFromMigration(fileName string) error {
 	delete(m.data, fileName)
 
 	return m.saveMigrationFile()
 }
 
-func (m *JsonMigration) MigrationExistsForFile(fileName string) bool {
-	return m.data[fileName] != ""
+func (m *jsonMigration) migrationExistsForFile(fileName string) (bool, error) {
+	return m.data[fileName] != "", nil
 }
 
-func (m *JsonMigration) GetJsonFileName() string {
+func (m *jsonMigration) getJsonFileName() string {
 	if m.jsonFileName == "" {
 		return migrationJsonFileName
 	}
@@ -110,7 +114,7 @@ func (m *JsonMigration) GetJsonFileName() string {
 	return m.jsonFileName
 }
 
-func (m *JsonMigration) getJsonReportFileName() string {
+func (m *jsonMigration) getJsonReportFileName() string {
 	if m.jsonFileName == "" {
 		return migrationJsonReportFileName
 	}
@@ -118,12 +122,12 @@ func (m *JsonMigration) getJsonReportFileName() string {
 	return m.jsonReporFileName
 }
 
-func (m *JsonMigration) SetJsonFilePath(filePath string) {
+func (m *jsonMigration) SetJsonFilePath(filePath string) {
 	m.jsonFileName = filePath + "/migrations.json"
 	m.jsonReporFileName = filePath + "/migration_reports.json"
 }
 
-func (m *JsonMigration) AddToMigrationReport(fileName string, errorToLog error) error {
+func (m *jsonMigration) AddToMigrationReport(fileName string, errorToLog error) error {
 	storeFileName := m.getJsonReportFileName()
 	message := "ok"
 	status := "success"
@@ -138,7 +142,7 @@ func (m *JsonMigration) AddToMigrationReport(fileName string, errorToLog error) 
 	}
 	defer file.Close()
 
-	newReportItem := JsonMigrationReport{
+	newReportItem := jsonMigrationReport{
 		FileName:     fileName,
 		ResultStatus: status,
 		CreatedAt:    time.Now().Format("2006-01-02 15:04:05"),
@@ -166,7 +170,7 @@ func (m *JsonMigration) AddToMigrationReport(fileName string, errorToLog error) 
 	return nil
 }
 
-func (m *JsonMigration) Report() (string, error) {
+func (m *jsonMigration) Report() (string, error) {
 	storeFileName := m.getJsonReportFileName()
 
 	_, err := os.Stat(storeFileName)
@@ -191,7 +195,7 @@ func (m *JsonMigration) Report() (string, error) {
 		return "", err
 	}
 
-	var collection []JsonMigrationReport
+	var collection []jsonMigrationReport
 	err = json.Unmarshal(byteValue, &collection)
 	if err != nil {
 		return "", err

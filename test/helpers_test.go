@@ -35,7 +35,6 @@ func rowCountInTable(db *sql.DB, tableName string) (int, error) {
 }
 
 func resetJsonFile() error {
-
 	return os.Remove(testFixtureFolder + "/migrations.json")
 }
 

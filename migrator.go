@@ -39,7 +39,7 @@ func Migrate(
 	m.migrationFilePath = migrationFilePath
 	m.migrationProvider = migrationProvider
 	m.migrationProvider.SetJsonFilePath(migrationFilePath)
-	m.migrationProvider.ResetDate()
+	m.migrationProvider.resetDate()
 	fileNames, err := m.orderedMigrationFiles()
 	if err != nil {
 		return err
@@ -106,7 +106,7 @@ func rollback(
 	m.migrationFilePath = migrationFilePath
 	m.migrationProvider = migrationProvider
 	m.migrationProvider.SetJsonFilePath(migrationFilePath)
-	migrations, err := m.migrationProvider.Migrations(!isCompleteRollback)
+	migrations, err := m.migrationProvider.migrations(!isCompleteRollback)
 	if err != nil {
 		return err
 	}
