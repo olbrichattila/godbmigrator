@@ -12,11 +12,11 @@ import (
 const (
 	dbTypeSqlite   = "sqlite"
 	dbTypePostgres = "pg"
-	dbTypeMySql    = "mysql"
+	dbTypeMySQL    = "mysql"
 	dbTypeFirebird = "firebird"
 )
 
-type DbMigration struct {
+type dbMigration struct {
 	db                  *sql.DB
 	timeString          string
 	sqlBindingParameter string
@@ -29,31 +29,31 @@ type reportRow struct {
 	Message      string
 }
 
-func newDbMigration(db *sql.DB) (*DbMigration, error) {
-	dbMigration := &DbMigration{db: db}
+func newDbMigration(db *sql.DB) (*dbMigration, error) {
+	dbMigration := &dbMigration{db: db}
 	dbMigration.resetDate()
 	driverType, err := dbMigration.diverType()
 	if err != nil {
 		return nil, err
 	}
-	dbMigration.setSqlBindingParameter(driverType)
-	createSqlProvider, err := MigrationTableProviderByDriverName(driverType)
+	dbMigration.setSQLBindingParameter(driverType)
+	createSQLProvider, err := migrationTableProviderByDriverName(driverType)
 	if err != nil {
 		return nil, err
 	}
 
-	err = dbMigration.Init(createSqlProvider)
+	err = dbMigration.init(createSQLProvider)
 	if err != nil {
 		return nil, err
 	}
 	return dbMigration, nil
 }
 
-func (m *DbMigration) resetDate() {
+func (m *dbMigration) resetDate() {
 	m.timeString = time.Now().Format("2006-01-02 15:04:05")
 }
 
-func (m *DbMigration) migrations(isLatest bool) ([]string, error) {
+func (m *dbMigration) migrations(isLatest bool) ([]string, error) {
 	var migrationList []string
 	var rows *sql.Rows
 	var err error
@@ -94,7 +94,7 @@ func (m *DbMigration) migrations(isLatest bool) ([]string, error) {
 	return migrationList, nil
 }
 
-func (m *DbMigration) latestMigrations(lastMigrationDate string) (*sql.Rows, error) {
+func (m *dbMigration) latestMigrations(lastMigrationDate string) (*sql.Rows, error) {
 	return m.db.Query(fmt.Sprintf(
 		`SELECT file_name 
 		 FROM migrations
@@ -105,7 +105,7 @@ func (m *DbMigration) latestMigrations(lastMigrationDate string) (*sql.Rows, err
 	), lastMigrationDate)
 }
 
-func (m *DbMigration) allMigrations() (*sql.Rows, error) {
+func (m *dbMigration) allMigrations() (*sql.Rows, error) {
 	return m.db.Query(
 		`SELECT file_name 
 		 FROM migrations
@@ -114,7 +114,7 @@ func (m *DbMigration) allMigrations() (*sql.Rows, error) {
 	)
 }
 
-func (m *DbMigration) addToMigration(fileName string) error {
+func (m *dbMigration) addToMigration(fileName string) error {
 	sql := fmt.Sprintf(`INSERT INTO migrations  
 			(file_name, created_at)
 			VALUES (%s, %s)`,
@@ -128,7 +128,7 @@ func (m *DbMigration) addToMigration(fileName string) error {
 
 }
 
-func (m *DbMigration) removeFromMigration(fileName string) error {
+func (m *dbMigration) removeFromMigration(fileName string) error {
 	sql := fmt.Sprintf(`UPDATE migrations 
 			SET deleted_at = %s
 			WHERE file_name = %s
@@ -142,7 +142,7 @@ func (m *DbMigration) removeFromMigration(fileName string) error {
 	return err
 }
 
-func (m *DbMigration) migrationExistsForFile(fileName string) (bool, error) {
+func (m *dbMigration) migrationExistsForFile(fileName string) (bool, error) {
 	sql := fmt.Sprintf(`SELECT count(*) as cnt
 			FROM migrations
 			WHERE file_name = %s
@@ -167,21 +167,21 @@ func (m *DbMigration) migrationExistsForFile(fileName string) (bool, error) {
 	return cnt > 0, nil
 }
 
-func (m *DbMigration) Init(createSqlProvider MigrationTableSqlProvider) error {
-	sql := createSqlProvider.CreateMigrationSql()
+func (m *dbMigration) init(createSQLProvider migrationTableSQLProvider) error {
+	sql := createSQLProvider.createMigrationSQL()
 
 	_, err := m.db.Exec(sql)
 	if err != nil {
 		return err
 	}
 
-	sql = createSqlProvider.CreateReportSql()
+	sql = createSQLProvider.createReportSQL()
 	_, err = m.db.Exec(sql)
 
 	return err
 }
 
-func (m *DbMigration) lastMigrationDate() (string, error) {
+func (m *dbMigration) lastMigrationDate() (string, error) {
 	sql := `SELECT max(created_at) as latest_migration
 			FROM migrations
 			WHERE deleted_at IS NULL`
@@ -193,7 +193,7 @@ func (m *DbMigration) lastMigrationDate() (string, error) {
 	return maxdate, err
 }
 
-func (m *DbMigration) setSqlBindingParameter(driverType string) {
+func (m *dbMigration) setSQLBindingParameter(driverType string) {
 	if driverType == dbTypePostgres {
 		m.sqlBindingParameter = "$"
 
@@ -203,7 +203,7 @@ func (m *DbMigration) setSqlBindingParameter(driverType string) {
 	m.sqlBindingParameter = "?"
 }
 
-func (m *DbMigration) getBindingParameter(index int) string {
+func (m *dbMigration) getBindingParameter(index int) string {
 	if m.sqlBindingParameter == "?" {
 		return "?"
 	}
@@ -211,11 +211,11 @@ func (m *DbMigration) getBindingParameter(index int) string {
 	return fmt.Sprintf("$%d", index)
 }
 
-func (m *DbMigration) diverType() (string, error) {
+func (m *dbMigration) diverType() (string, error) {
 	driverType := reflect.TypeOf(m.db.Driver()).String()
 
 	if strings.Contains(driverType, "mysql") {
-		return dbTypeMySql, nil
+		return dbTypeMySQL, nil
 	}
 
 	if strings.Contains(driverType, "pq") || strings.Contains(driverType, "postgres") {
@@ -233,16 +233,16 @@ func (m *DbMigration) diverType() (string, error) {
 	return "", fmt.Errorf("the driver used %s does not match any known dirver by the application", driverType)
 }
 
-func (m *DbMigration) getJsonFileName() string {
+func (m *dbMigration) getJSONFileName() string {
 	// dummy, not used in db version, need due to interface
 	return ""
 }
 
-func (m *DbMigration) SetJsonFilePath(filePath string) {
+func (m *dbMigration) SetJSONFilePath(_ string) {
 	// dummy, not used in db version, need due to interface
 }
 
-func (m *DbMigration) AddToMigrationReport(fileName string, errorToLog error) error {
+func (m *dbMigration) AddToMigrationReport(fileName string, errorToLog error) error {
 	sql := fmt.Sprintf(`INSERT INTO migration_reports
 			(file_name, created_at, result_status, message)
 			VALUES (%s, %s, %s, %s)`,
@@ -266,7 +266,7 @@ func (m *DbMigration) AddToMigrationReport(fileName string, errorToLog error) er
 	return err
 }
 
-func (m *DbMigration) Report() (string, error) {
+func (m *dbMigration) Report() (string, error) {
 	rows, err := m.db.Query(`SELECT  file_name, created_at, result_status, message FROM migration_reports`)
 	if err != nil {
 		return "", err

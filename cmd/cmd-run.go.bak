@@ -1,3 +1,4 @@
+// main package is for testing only locally, rename it to use
 package main
 
 // rename cmd.go to bak, then rename this to .go and test your changes
@@ -14,9 +15,13 @@ import (
 
 func main() {
 	migrationFilePath := "./migrations"
-	dbType, provider, function, count := params()
+	dbType, provider, function, count, add := params()
 
-	fmt.Printf("Running with %s, %s, %s, %d\n", dbType, provider, function, count)
+	fmt.Printf("Running with %s, %s, %s, %d %s\n", dbType, provider, function, count, add)
+
+	if add != "" {
+		migrator.AddNewMigrationFiles(add, "")
+	}
 
 	db, err := getConnection(dbType)
 	if err != nil {
@@ -55,14 +60,15 @@ func main() {
 	}
 }
 
-func params() (string, string, string, int) {
+func params() (string, string, string, int, string) {
 	db := flag.String("db", "sqlite", "Database driver name")
 	function := flag.String("function", "migrate", "function=migrate/rollback/report")
 	count := flag.Int("count", 0, "count=1")
 	provider := flag.String("provider", "db", "provider=db/json")
+	add := flag.String("add", "", "--add=filename")
 	flag.Parse()
 
-	return *db, *provider, *function, *count
+	return *db, *provider, *function, *count, *add
 }
 
 func connectToFirebaseDatabase() (*sql.DB, error) {

@@ -10,7 +10,7 @@ import (
 
 type migration struct {
 	db                *sql.DB
-	migrationProvider MigrationProvider
+	migrationProvider migrationProvider
 	migrationFilePath string
 }
 
@@ -41,7 +41,7 @@ func (m *migration) orderedMigrationFiles() ([]string, error) {
 	return fileNames, nil
 }
 
-func (m *migration) executeSqlFile(fileName string) (bool, error) {
+func (m *migration) executeSQLFile(fileName string) (bool, error) {
 	exists, err := m.migrationProvider.migrationExistsForFile(fileName)
 	if err != nil {
 		return false, err
@@ -57,7 +57,7 @@ func (m *migration) executeSqlFile(fileName string) (bool, error) {
 		return false, err
 	}
 
-	err = m.executeSql(string(content))
+	err = m.executeSQL(string(content))
 	if err == nil {
 		err = m.migrationProvider.addToMigration(fileName)
 		if err != nil {
@@ -70,7 +70,7 @@ func (m *migration) executeSqlFile(fileName string) (bool, error) {
 	return true, err
 }
 
-func (m *migration) executeRollbackSqlFile(fileName string) error {
+func (m *migration) executeRollbackSQLFile(fileName string) error {
 	rollbackFileName, err := m.resolveRollbackFile(fileName)
 	if err != nil {
 		fmt.Printf("Skip rollback for %s as rollback file does not exists\n", fileName)
@@ -88,7 +88,7 @@ func (m *migration) executeRollbackSqlFile(fileName string) error {
 		return err
 	}
 
-	err = m.executeSql(string(content))
+	err = m.executeSQL(string(content))
 	if err == nil {
 		err = m.migrationProvider.removeFromMigration(fileName)
 		if err != nil {
@@ -101,7 +101,7 @@ func (m *migration) executeRollbackSqlFile(fileName string) error {
 	return err
 }
 
-func (m *migration) executeSql(sql string) error {
+func (m *migration) executeSQL(sql string) error {
 	tx, err := m.db.Begin()
 	if err != nil {
 		return err

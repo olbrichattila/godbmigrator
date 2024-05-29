@@ -2,21 +2,21 @@ package migrator
 
 import "fmt"
 
-type MigrationTableSqlProvider interface {
-	CreateMigrationSql() string
-	CreateReportSql() string
+type migrationTableSQLProvider interface {
+	createMigrationSQL() string
+	createReportSQL() string
 }
 
-func MigrationTableProviderByDriverName(driverName string) (MigrationTableSqlProvider, error) {
+func migrationTableProviderByDriverName(driverName string) (migrationTableSQLProvider, error) {
 	switch driverName {
 	case dbTypeSqlite:
-		return &SqliteMigrationTableSqlProvider{}, nil
+		return &sqliteMigrationTableSQLProvider{}, nil
 	case dbTypePostgres:
-		return &PostgresMigrationTableSqlProvider{}, nil
-	case dbTypeMySql:
-		return &MySqlMigrationTableSqlProvider{}, nil
+		return &postgresMigrationTableSQLProvider{}, nil
+	case dbTypeMySQL:
+		return &mySQLMigrationTableSQLProvider{}, nil
 	case dbTypeFirebird:
-		return &FirebirdMigrationTableSqlProvider{}, nil
+		return &firebirdMigrationTableSQLProvider{}, nil
 	default:
 		return nil, fmt.Errorf("provider %s does not exists", driverName)
 	}

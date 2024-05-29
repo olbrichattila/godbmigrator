@@ -1,9 +1,9 @@
 package migrator
 
-type SqliteMigrationTableSqlProvider struct {
+type sqliteMigrationTableSQLProvider struct {
 }
 
-func (p *SqliteMigrationTableSqlProvider) CreateMigrationSql() string {
+func (p *sqliteMigrationTableSQLProvider) createMigrationSQL() string {
 	return `CREATE TABLE IF NOT EXISTS migrations (
 		file_name VARCHAR(255),
 		created_at DATETIME,
@@ -11,7 +11,7 @@ func (p *SqliteMigrationTableSqlProvider) CreateMigrationSql() string {
 	)`
 }
 
-func (p *SqliteMigrationTableSqlProvider) CreateReportSql() string {
+func (p *sqliteMigrationTableSQLProvider) createReportSQL() string {
 	return `CREATE TABLE IF NOT EXISTS migration_reports (
 		file_name VARCHAR(255),
 		result_status VARCHAR(12),

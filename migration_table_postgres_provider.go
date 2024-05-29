@@ -1,9 +1,9 @@
 package migrator
 
-type PostgresMigrationTableSqlProvider struct {
+type postgresMigrationTableSQLProvider struct {
 }
 
-func (p *PostgresMigrationTableSqlProvider) CreateMigrationSql() string {
+func (p *postgresMigrationTableSQLProvider) createMigrationSQL() string {
 	return `CREATE TABLE IF NOT EXISTS migrations (
 		file_name VARCHAR(255),
 		created_at TIMESTAMP,
@@ -11,7 +11,7 @@ func (p *PostgresMigrationTableSqlProvider) CreateMigrationSql() string {
 	)`
 }
 
-func (p *PostgresMigrationTableSqlProvider) CreateReportSql() string {
+func (p *postgresMigrationTableSQLProvider) createReportSQL() string {
 	return `CREATE TABLE IF NOT EXISTS migration_reports (
 		file_name VARCHAR(255),
 		result_status VARCHAR(12),

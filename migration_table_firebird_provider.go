@@ -1,9 +1,9 @@
 package migrator
 
-type FirebirdMigrationTableSqlProvider struct {
+type firebirdMigrationTableSQLProvider struct {
 }
 
-func (p *FirebirdMigrationTableSqlProvider) CreateMigrationSql() string {
+func (p *firebirdMigrationTableSQLProvider) createMigrationSQL() string {
 	return `EXECUTE BLOCK AS BEGIN
 		if (not exists(select 1 from rdb$relations where rdb$relation_name = 'MIGRATIONS')) then
 		execute statement 'CREATE TABLE MIGRATIONS (
@@ -13,7 +13,7 @@ func (p *FirebirdMigrationTableSqlProvider) CreateMigrationSql() string {
 		END`
 }
 
-func (p *FirebirdMigrationTableSqlProvider) CreateReportSql() string {
+func (p *firebirdMigrationTableSQLProvider) createReportSQL() string {
 	return `EXECUTE BLOCK AS BEGIN
 		if (not exists(select 1 from rdb$relations where rdb$relation_name = 'MIGRATION_REPORTS')) then
 		execute statement 'CREATE TABLE MIGRATION_REPORTS (

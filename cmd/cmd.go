@@ -1,3 +1,4 @@
+// Main package is to display basic package info
 package main
 
 import "fmt"

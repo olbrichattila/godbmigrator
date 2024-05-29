@@ -1,3 +1,4 @@
+// Package migrator is a lightweight database migrator package, pass only the *sql.DB, migrate, rollback and migration reports
 package migrator
 
 import (
@@ -7,18 +8,20 @@ import (
 	"time"
 )
 
+// Rollback rolls back last migrated items or all if count is 0
 func Rollback(
 	db *sql.DB,
-	migrationProvider MigrationProvider,
+	migrationProvider migrationProvider,
 	migrationFilePath string,
 	count int,
 ) error {
 	return rollback(db, migrationProvider, migrationFilePath, count, false)
 }
 
+// Refresh runs a full rollback and migrate again
 func Refresh(
 	db *sql.DB,
-	migrationProvider MigrationProvider,
+	migrationProvider migrationProvider,
 	migrationFilePath string,
 ) error {
 	err := rollback(db, migrationProvider, migrationFilePath, 0, true)
@@ -29,16 +32,17 @@ func Refresh(
 	return Migrate(db, migrationProvider, migrationFilePath, 0)
 }
 
+// Migrate execute migrations
 func Migrate(
 	db *sql.DB,
-	migrationProvider MigrationProvider,
+	migrationProvider migrationProvider,
 	migrationFilePath string,
 	count int,
 ) error {
 	m := newMigrator(db)
 	m.migrationFilePath = migrationFilePath
 	m.migrationProvider = migrationProvider
-	m.migrationProvider.SetJsonFilePath(migrationFilePath)
+	m.migrationProvider.SetJSONFilePath(migrationFilePath)
 	m.migrationProvider.resetDate()
 	fileNames, err := m.orderedMigrationFiles()
 	if err != nil {
@@ -52,7 +56,7 @@ func Migrate(
 				break
 			}
 		}
-		migrated, err := m.executeSqlFile(fileName)
+		migrated, err := m.executeSQLFile(fileName)
 		if err != nil {
 			return err
 		}
@@ -67,19 +71,21 @@ func Migrate(
 	return nil
 }
 
+// Report return a report of the alredy executed migrations
 func Report(
 	db *sql.DB,
-	migrationProvider MigrationProvider,
+	migrationProvider migrationProvider,
 	migrationFilePath string,
 ) (string, error) {
 
 	m := newMigrator(db)
 	m.migrationFilePath = migrationFilePath
 	m.migrationProvider = migrationProvider
-	m.migrationProvider.SetJsonFilePath(migrationFilePath)
+	m.migrationProvider.SetJSONFilePath(migrationFilePath)
 	return m.migrationProvider.Report()
 }
 
+// AddNewMigrationFiles adds a new blank migration file and a rollback file
 func AddNewMigrationFiles(migrationFilePath, customText string) error {
 	var err error
 	err = createNewMigrationFiles(migrationFilePath, customText, false)
@@ -96,7 +102,7 @@ func AddNewMigrationFiles(migrationFilePath, customText string) error {
 
 func rollback(
 	db *sql.DB,
-	migrationProvider MigrationProvider,
+	migrationProvider migrationProvider,
 	migrationFilePath string,
 	count int,
 	isCompleteRollback bool,
@@ -105,7 +111,7 @@ func rollback(
 	m := newMigrator(db)
 	m.migrationFilePath = migrationFilePath
 	m.migrationProvider = migrationProvider
-	m.migrationProvider.SetJsonFilePath(migrationFilePath)
+	m.migrationProvider.SetJSONFilePath(migrationFilePath)
 	migrations, err := m.migrationProvider.migrations(!isCompleteRollback)
 	if err != nil {
 		return err
@@ -123,7 +129,7 @@ func rollback(
 			}
 		}
 
-		err = m.executeRollbackSqlFile(fileName)
+		err = m.executeRollbackSQLFile(fileName)
 		if err != nil {
 			return err
 		}

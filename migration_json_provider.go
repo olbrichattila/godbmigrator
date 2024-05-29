@@ -10,8 +10,8 @@ import (
 	"time"
 )
 
-const migrationJsonFileName = "./migrations/migrations.json"
-const migrationJsonReportFileName = "./migrations/migration_report.json"
+const migrationJSONFileName = "./migrations/migrations.json"
+const migrationJSONReportFileName = "./migrations/migration_report.json"
 
 type jsonMigration struct {
 	data              map[string]string
@@ -27,7 +27,7 @@ type jsonMigrationReport struct {
 	Message      string `json:"message"`
 }
 
-func newJsonMigration() (*jsonMigration, error) {
+func newJSONMigration() (*jsonMigration, error) {
 	jsonMigration := &jsonMigration{}
 	jsonMigration.resetDate()
 	err := jsonMigration.loadMigrationFile()
@@ -62,7 +62,7 @@ func (m *jsonMigration) migrations(isLatest bool) ([]string, error) {
 
 func (m *jsonMigration) loadMigrationFile() error {
 	m.data = make(map[string]string)
-	jsonFileName := m.getJsonFileName()
+	jsonFileName := m.getJSONFileName()
 	if !fileExists(jsonFileName) {
 		return nil
 	}
@@ -86,7 +86,7 @@ func (m *jsonMigration) saveMigrationFile() error {
 		return err
 	}
 
-	jsonFileName := m.getJsonFileName()
+	jsonFileName := m.getJSONFileName()
 	return ioutil.WriteFile(jsonFileName, jsonData, 0644)
 }
 
@@ -106,29 +106,29 @@ func (m *jsonMigration) migrationExistsForFile(fileName string) (bool, error) {
 	return m.data[fileName] != "", nil
 }
 
-func (m *jsonMigration) getJsonFileName() string {
+func (m *jsonMigration) getJSONFileName() string {
 	if m.jsonFileName == "" {
-		return migrationJsonFileName
+		return migrationJSONFileName
 	}
 
 	return m.jsonFileName
 }
 
-func (m *jsonMigration) getJsonReportFileName() string {
+func (m *jsonMigration) getJSONReportFileName() string {
 	if m.jsonFileName == "" {
-		return migrationJsonReportFileName
+		return migrationJSONReportFileName
 	}
 
 	return m.jsonReporFileName
 }
 
-func (m *jsonMigration) SetJsonFilePath(filePath string) {
+func (m *jsonMigration) SetJSONFilePath(filePath string) {
 	m.jsonFileName = filePath + "/migrations.json"
 	m.jsonReporFileName = filePath + "/migration_reports.json"
 }
 
 func (m *jsonMigration) AddToMigrationReport(fileName string, errorToLog error) error {
-	storeFileName := m.getJsonReportFileName()
+	storeFileName := m.getJSONReportFileName()
 	message := "ok"
 	status := "success"
 	if errorToLog != nil {
@@ -171,7 +171,7 @@ func (m *jsonMigration) AddToMigrationReport(fileName string, errorToLog error) 
 }
 
 func (m *jsonMigration) Report() (string, error) {
-	storeFileName := m.getJsonReportFileName()
+	storeFileName := m.getJSONReportFileName()
 
 	_, err := os.Stat(storeFileName)
 	if os.IsNotExist(err) {
