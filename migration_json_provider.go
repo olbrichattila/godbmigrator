@@ -127,7 +127,7 @@ func (m *jsonMigration) SetJSONFilePath(filePath string) {
 	m.jsonReporFileName = filePath + "/migration_reports.json"
 }
 
-func (m *jsonMigration) AddToMigrationReport(fileName string, errorToLog error) error {
+func (m *jsonMigration) addToMigrationReport(fileName string, errorToLog error) error {
 	storeFileName := m.getJSONReportFileName()
 	message := "ok"
 	status := "success"

@@ -242,7 +242,7 @@ func (m *dbMigration) SetJSONFilePath(_ string) {
 	// dummy, not used in db version, need due to interface
 }
 
-func (m *dbMigration) AddToMigrationReport(fileName string, errorToLog error) error {
+func (m *dbMigration) addToMigrationReport(fileName string, errorToLog error) error {
 	sql := fmt.Sprintf(`INSERT INTO migration_reports
 			(file_name, created_at, result_status, message)
 			VALUES (%s, %s, %s, %s)`,

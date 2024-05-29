@@ -29,7 +29,7 @@ func main() {
 	}
 	defer db.Close()
 
-	migrationProvider, err := migrator.NewMigrationProvider(provider, db)
+	MigrationProvider, err := migrator.NewMigrationProvider(provider, db)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -40,13 +40,13 @@ func main() {
 
 	switch function {
 	case "migrate":
-		err = migrator.Migrate(db, migrationProvider, migrationFilePath, count)
+		err = migrator.Migrate(db, MigrationProvider, migrationFilePath, count)
 	case "rollback":
-		err = migrator.Rollback(db, migrationProvider, migrationFilePath, count)
+		err = migrator.Rollback(db, MigrationProvider, migrationFilePath, count)
 	case "refresh":
-		err = migrator.Refresh(db, migrationProvider, migrationFilePath)
+		err = migrator.Refresh(db, MigrationProvider, migrationFilePath)
 	case "report":
-		report, err := migrator.Report(db, migrationProvider, migrationFilePath)
+		report, err := migrator.Report(db, MigrationProvider, migrationFilePath)
 		if err != nil {
 			panic("Error: " + err.Error())
 		}

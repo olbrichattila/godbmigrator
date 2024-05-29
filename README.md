@@ -61,12 +61,12 @@ Currently the command line utility supports only SqLite, the build in solution s
 
 ```
 migrationFilePath := "./migration"
-migrationProvider, err := migrator.NewMigrationProvider("json")
+MigrationProvider, err := migrator.NewMigrationProvider("json")
 if err != nil {
     panic("Error: " + err.Error())
 }
 
-err = migrator.Migrate(db, migrationProvider, migrationFilePath, count)
+err = migrator.Migrate(db, MigrationProvider, migrationFilePath, count)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -75,12 +75,12 @@ if err != nil {
 ## Example rollback: (where the db is your *sql.DB)
 ```
 migrationFilePath := "./migration"
-migrationProvider, err := migrator.NewMigrationProvider("json", nil)
+MigrationProvider, err := migrator.NewMigrationProvider("json", nil)
 if err != nil {
     panic("Error: " + err.Error())
 }
 
-err = migrator.Rollback(db, migrationProvider, migrationFilePath, count)
+err = migrator.Rollback(db, MigrationProvider, migrationFilePath, count)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -90,12 +90,12 @@ if err != nil {
 Refresh is when everithing rolled back and migrated from scratch
 ```
 migrationFilePath := "./migration"
-migrationProvider, err := migrator.NewMigrationProvider("json", nil)
+MigrationProvider, err := migrator.NewMigrationProvider("json", nil)
 if err != nil {
     panic("Error: " + err.Error())
 }
 
-err = migrator.Refresh(db, migrationProvider, migrationFilePath)
+err = migrator.Refresh(db, MigrationProvider, migrationFilePath)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -104,12 +104,12 @@ if err != nil {
 ## Migrate with database provider
 ```
 migrationFilePath := "./migration"
-migrationProvider, err := migrator.NewMigrationProvider("db", db)
+MigrationProvider, err := migrator.NewMigrationProvider("db", db)
 if err != nil {
     panic("Error: " + err.Error())
 }
 
-err = migrator.Migrate(db, migrationProvider, migrationFilePath, count)
+err = migrator.Migrate(db, MigrationProvider, migrationFilePath, count)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -118,12 +118,12 @@ if err != nil {
 ## Rollback with database provider
 ```
 migrationFilePath := "./migration"
-migrationProvider, err := migrator.NewMigrationProvider("db", db)
+MigrationProvider, err := migrator.NewMigrationProvider("db", db)
 if err != nil {
     panic("Error: " + err.Error())
 }
 
-err = migrator.Rollback(db, migrationProvider, migrationFilePath, count)
+err = migrator.Rollback(db, MigrationProvider, migrationFilePath, count)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -133,12 +133,12 @@ if err != nil {
 Refresh is when everithing rolled back and migrated from scratch
 ```
 migrationFilePath := "./migration"
-migrationProvider, err := migrator.NewMigrationProvider("db", db)
+MigrationProvider, err := migrator.NewMigrationProvider("db", db)
 if err != nil {
     panic("Error: " + err.Error())
 }
 
-err = migrator.Refresh(db, migrationProvider, migrationFilePath)
+err = migrator.Refresh(db, MigrationProvider, migrationFilePath)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -160,12 +160,12 @@ Fetching the migratio report to a readable string:
 
 ```
 migrationFilePath := "./migration"
-migrationProvider, err := migrator.NewMigrationProvider("db", db)
+MigrationProvider, err := migrator.NewMigrationProvider("db", db)
 if err != nil {
     panic("Error: " + err.Error())
 }
 
-report, err := migrator.Report(db, migrationProvider, migrationFilePath)
+report, err := migrator.Report(db, MigrationProvider, migrationFilePath)
 if err != nil {
     panic("Error: " + err.Error())
 }

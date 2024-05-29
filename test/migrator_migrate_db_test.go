@@ -30,10 +30,10 @@ func (suite *DbTestSuite) TearDownTest() {
 }
 
 func (t *DbTestSuite) TestDBMigratorMigrateAllTables() {
-	migrationProvider, err := migrator.NewMigrationProvider("db", t.db)
+	MigrationProvider, err := migrator.NewMigrationProvider("db", t.db)
 	t.Nil(err)
 
-	err = migrator.Migrate(t.db, migrationProvider, testFixtureFolder, 0)
+	err = migrator.Migrate(t.db, MigrationProvider, testFixtureFolder, 0)
 	t.Nil(err)
 
 	tableCount, err := tableCountInDatabase(t.db)
@@ -50,10 +50,10 @@ func (t *DbTestSuite) TestDBMigratorMigrateAllTables() {
 func (t *DbTestSuite) TestDBMigratorMigrateSpeciedAmountOfTables() {
 	migrateCount := 2
 
-	migrationProvider, err := migrator.NewMigrationProvider("db", t.db)
+	MigrationProvider, err := migrator.NewMigrationProvider("db", t.db)
 	t.Nil(err)
 
-	err = migrator.Migrate(t.db, migrationProvider, testFixtureFolder, migrateCount)
+	err = migrator.Migrate(t.db, MigrationProvider, testFixtureFolder, migrateCount)
 	t.Nil(err)
 
 	tableCount, err := tableCountInDatabase(t.db)
@@ -61,7 +61,7 @@ func (t *DbTestSuite) TestDBMigratorMigrateSpeciedAmountOfTables() {
 
 	t.Equal(4, tableCount)
 
-	err = migrator.Migrate(t.db, migrationProvider, testFixtureFolder, migrateCount)
+	err = migrator.Migrate(t.db, MigrationProvider, testFixtureFolder, migrateCount)
 	t.Nil(err)
 
 	tableCount, err = tableCountInDatabase(t.db)
@@ -69,7 +69,7 @@ func (t *DbTestSuite) TestDBMigratorMigrateSpeciedAmountOfTables() {
 
 	t.Equal(6, tableCount)
 
-	err = migrator.Migrate(t.db, migrationProvider, testFixtureFolder, migrateCount)
+	err = migrator.Migrate(t.db, MigrationProvider, testFixtureFolder, migrateCount)
 	t.Nil(err)
 
 	tableCount, err = tableCountInDatabase(t.db)
@@ -79,10 +79,10 @@ func (t *DbTestSuite) TestDBMigratorMigrateSpeciedAmountOfTables() {
 }
 
 func (t *DbTestSuite) TestDBMigratorRollbackAllTables() {
-	migrationProvider, err := migrator.NewMigrationProvider("db", t.db)
+	MigrationProvider, err := migrator.NewMigrationProvider("db", t.db)
 	t.Nil(err)
 
-	err = migrator.Migrate(t.db, migrationProvider, testFixtureFolder, 0)
+	err = migrator.Migrate(t.db, MigrationProvider, testFixtureFolder, 0)
 	t.Nil(err)
 
 	tableCount, err := tableCountInDatabase(t.db)
@@ -90,7 +90,7 @@ func (t *DbTestSuite) TestDBMigratorRollbackAllTables() {
 
 	t.Equal(7, tableCount)
 
-	err = migrator.Rollback(t.db, migrationProvider, testFixtureFolder, 0)
+	err = migrator.Rollback(t.db, MigrationProvider, testFixtureFolder, 0)
 	t.Nil(err)
 
 	tableCount, err = tableCountInDatabase(t.db)
@@ -100,10 +100,10 @@ func (t *DbTestSuite) TestDBMigratorRollbackAllTables() {
 }
 
 func (t *DbTestSuite) TestDBMigratorRollbackSpecificAmountOfTables() {
-	migrationProvider, err := migrator.NewMigrationProvider("db", t.db)
+	MigrationProvider, err := migrator.NewMigrationProvider("db", t.db)
 	t.Nil(err)
 
-	err = migrator.Migrate(t.db, migrationProvider, testFixtureFolder, 0)
+	err = migrator.Migrate(t.db, MigrationProvider, testFixtureFolder, 0)
 	t.Nil(err)
 
 	tableCount, err := tableCountInDatabase(t.db)
@@ -111,7 +111,7 @@ func (t *DbTestSuite) TestDBMigratorRollbackSpecificAmountOfTables() {
 
 	t.Equal(7, tableCount)
 
-	err = migrator.Rollback(t.db, migrationProvider, testFixtureFolder, 2)
+	err = migrator.Rollback(t.db, MigrationProvider, testFixtureFolder, 2)
 	t.Nil(err)
 
 	tableCount, err = tableCountInDatabase(t.db)
@@ -119,7 +119,7 @@ func (t *DbTestSuite) TestDBMigratorRollbackSpecificAmountOfTables() {
 
 	t.Equal(5, tableCount)
 
-	err = migrator.Rollback(t.db, migrationProvider, testFixtureFolder, 2)
+	err = migrator.Rollback(t.db, MigrationProvider, testFixtureFolder, 2)
 	t.Nil(err)
 
 	tableCount, err = tableCountInDatabase(t.db)
@@ -129,16 +129,16 @@ func (t *DbTestSuite) TestDBMigratorRollbackSpecificAmountOfTables() {
 }
 
 func (t *DbTestSuite) TestDBMigratorRollsBackTablesInProperBatches() {
-	migrationProvider, err := migrator.NewMigrationProvider("db", t.db)
+	MigrationProvider, err := migrator.NewMigrationProvider("db", t.db)
 	t.Nil(err)
 
-	err = migrator.Migrate(t.db, migrationProvider, testFixtureFolder, 1)
+	err = migrator.Migrate(t.db, MigrationProvider, testFixtureFolder, 1)
 	t.Nil(err)
 	time.Sleep(time.Second)
-	err = migrator.Migrate(t.db, migrationProvider, testFixtureFolder, 2)
+	err = migrator.Migrate(t.db, MigrationProvider, testFixtureFolder, 2)
 	t.Nil(err)
 	time.Sleep(time.Second)
-	err = migrator.Migrate(t.db, migrationProvider, testFixtureFolder, 2)
+	err = migrator.Migrate(t.db, MigrationProvider, testFixtureFolder, 2)
 	t.Nil(err)
 
 	tableCount, err := tableCountInDatabase(t.db)
@@ -146,7 +146,7 @@ func (t *DbTestSuite) TestDBMigratorRollsBackTablesInProperBatches() {
 
 	t.Equal(7, tableCount)
 
-	err = migrator.Rollback(t.db, migrationProvider, testFixtureFolder, 0)
+	err = migrator.Rollback(t.db, MigrationProvider, testFixtureFolder, 0)
 	t.Nil(err)
 
 	tableCount, err = tableCountInDatabase(t.db)
@@ -154,7 +154,7 @@ func (t *DbTestSuite) TestDBMigratorRollsBackTablesInProperBatches() {
 
 	t.Equal(5, tableCount)
 
-	err = migrator.Rollback(t.db, migrationProvider, testFixtureFolder, 0)
+	err = migrator.Rollback(t.db, MigrationProvider, testFixtureFolder, 0)
 	t.Nil(err)
 
 	tableCount, err = tableCountInDatabase(t.db)
@@ -162,7 +162,7 @@ func (t *DbTestSuite) TestDBMigratorRollsBackTablesInProperBatches() {
 
 	t.Equal(3, tableCount)
 
-	err = migrator.Rollback(t.db, migrationProvider, testFixtureFolder, 0)
+	err = migrator.Rollback(t.db, MigrationProvider, testFixtureFolder, 0)
 	t.Nil(err)
 
 	tableCount, err = tableCountInDatabase(t.db)
@@ -172,10 +172,10 @@ func (t *DbTestSuite) TestDBMigratorRollsBackTablesInProperBatches() {
 }
 
 func (t *DbTestSuite) TestDBRefresh() {
-	migrationProvider, err := migrator.NewMigrationProvider("db", t.db)
+	MigrationProvider, err := migrator.NewMigrationProvider("db", t.db)
 	t.Nil(err)
 
-	err = migrator.Migrate(t.db, migrationProvider, testFixtureFolder, 3)
+	err = migrator.Migrate(t.db, MigrationProvider, testFixtureFolder, 3)
 	t.Nil(err)
 
 	tableCount, err := tableCountInDatabase(t.db)
@@ -183,7 +183,7 @@ func (t *DbTestSuite) TestDBRefresh() {
 
 	t.Equal(5, tableCount)
 
-	err = migrator.Refresh(t.db, migrationProvider, testFixtureFolder)
+	err = migrator.Refresh(t.db, MigrationProvider, testFixtureFolder)
 	t.Nil(err)
 
 	tableCount, err = tableCountInDatabase(t.db)
