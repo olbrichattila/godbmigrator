@@ -96,7 +96,7 @@ func (m *migration) executeRollbackSQLFile(fileName string) error {
 		}
 	}
 
-	err = m.MigrationProvider.AddToMigrationReport(rollbackFileName, err)
+	_ = m.MigrationProvider.AddToMigrationReport(rollbackFileName, err)
 
 	return err
 }
