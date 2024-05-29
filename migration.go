@@ -42,7 +42,7 @@ func (m *migration) orderedMigrationFiles() ([]string, error) {
 }
 
 func (m *migration) executeSQLFile(fileName string) (bool, error) {
-	exists, err := m.MigrationProvider.migrationExistsForFile(fileName)
+	exists, err := m.MigrationProvider.MigrationExistsForFile(fileName)
 	if err != nil {
 		return false, err
 	}
@@ -74,7 +74,7 @@ func (m *migration) executeRollbackSQLFile(fileName string) error {
 	rollbackFileName, err := m.resolveRollbackFile(fileName)
 	if err != nil {
 		fmt.Printf("Skip rollback for %s as rollback file does not exists\n", fileName)
-		err := m.MigrationProvider.removeFromMigration(fileName)
+		err := m.MigrationProvider.RemoveFromMigration(fileName)
 		if err != nil {
 			return err
 		}
@@ -90,7 +90,7 @@ func (m *migration) executeRollbackSQLFile(fileName string) error {
 
 	err = m.executeSQL(string(content))
 	if err == nil {
-		err = m.MigrationProvider.removeFromMigration(fileName)
+		err = m.MigrationProvider.RemoveFromMigration(fileName)
 		if err != nil {
 			return err
 		}

@@ -7,12 +7,12 @@ import (
 
 // MigrationProvider is the base migrator interface
 type MigrationProvider interface {
-	migrations(bool) ([]string, error)
+	Migrations(bool) ([]string, error)
 	AddToMigration(string) error
-	removeFromMigration(string) error
-	migrationExistsForFile(string) (bool, error)
-	resetDate()
-	getJSONFileName() string
+	RemoveFromMigration(string) error
+	MigrationExistsForFile(string) (bool, error)
+	ResetDate()
+	GetJSONFileName() string
 	SetJSONFilePath(string)
 	AddToMigrationReport(string, error) error
 	Report() (string, error)

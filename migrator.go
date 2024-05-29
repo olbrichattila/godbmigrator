@@ -35,15 +35,15 @@ func Refresh(
 // Migrate execute migrations
 func Migrate(
 	db *sql.DB,
-	MigrationProvider MigrationProvider,
+	migrationProvider MigrationProvider,
 	migrationFilePath string,
 	count int,
 ) error {
 	m := newMigrator(db)
 	m.migrationFilePath = migrationFilePath
-	m.MigrationProvider = MigrationProvider
+	m.MigrationProvider = migrationProvider
 	m.MigrationProvider.SetJSONFilePath(migrationFilePath)
-	m.MigrationProvider.resetDate()
+	m.MigrationProvider.ResetDate()
 	fileNames, err := m.orderedMigrationFiles()
 	if err != nil {
 		return err
@@ -102,7 +102,7 @@ func AddNewMigrationFiles(migrationFilePath, customText string) error {
 
 func rollback(
 	db *sql.DB,
-	MigrationProvider MigrationProvider,
+	migrationProvider MigrationProvider,
 	migrationFilePath string,
 	count int,
 	isCompleteRollback bool,
@@ -110,9 +110,9 @@ func rollback(
 	var err error
 	m := newMigrator(db)
 	m.migrationFilePath = migrationFilePath
-	m.MigrationProvider = MigrationProvider
+	m.MigrationProvider = migrationProvider
 	m.MigrationProvider.SetJSONFilePath(migrationFilePath)
-	migrations, err := m.MigrationProvider.migrations(!isCompleteRollback)
+	migrations, err := m.MigrationProvider.Migrations(!isCompleteRollback)
 	if err != nil {
 		return err
 	}

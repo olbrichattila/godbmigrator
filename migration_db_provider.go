@@ -31,7 +31,7 @@ type reportRow struct {
 
 func newDbMigration(db *sql.DB) (*dbMigration, error) {
 	dbMigration := &dbMigration{db: db}
-	dbMigration.resetDate()
+	dbMigration.ResetDate()
 	driverType, err := dbMigration.diverType()
 	if err != nil {
 		return nil, err
@@ -49,11 +49,11 @@ func newDbMigration(db *sql.DB) (*dbMigration, error) {
 	return dbMigration, nil
 }
 
-func (m *dbMigration) resetDate() {
+func (m *dbMigration) ResetDate() {
 	m.timeString = time.Now().Format("2006-01-02 15:04:05")
 }
 
-func (m *dbMigration) migrations(isLatest bool) ([]string, error) {
+func (m *dbMigration) Migrations(isLatest bool) ([]string, error) {
 	var migrationList []string
 	var rows *sql.Rows
 	var err error
@@ -128,7 +128,7 @@ func (m *dbMigration) AddToMigration(fileName string) error {
 
 }
 
-func (m *dbMigration) removeFromMigration(fileName string) error {
+func (m *dbMigration) RemoveFromMigration(fileName string) error {
 	sql := fmt.Sprintf(`UPDATE migrations 
 			SET deleted_at = %s
 			WHERE file_name = %s
@@ -142,7 +142,7 @@ func (m *dbMigration) removeFromMigration(fileName string) error {
 	return err
 }
 
-func (m *dbMigration) migrationExistsForFile(fileName string) (bool, error) {
+func (m *dbMigration) MigrationExistsForFile(fileName string) (bool, error) {
 	sql := fmt.Sprintf(`SELECT count(*) as cnt
 			FROM migrations
 			WHERE file_name = %s
@@ -233,7 +233,7 @@ func (m *dbMigration) diverType() (string, error) {
 	return "", fmt.Errorf("the driver used %s does not match any known dirver by the application", driverType)
 }
 
-func (m *dbMigration) getJSONFileName() string {
+func (m *dbMigration) GetJSONFileName() string {
 	// dummy, not used in db version, need due to interface
 	return ""
 }
