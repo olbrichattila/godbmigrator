@@ -150,7 +150,7 @@ func createNewMigrationFiles(migrationFilePath, customText string, isRollback bo
 	}
 
 	if isRollback {
-		mgType = "rollback"
+		mgType = typeRollback
 	}
 
 	fileName := fmt.Sprintf(

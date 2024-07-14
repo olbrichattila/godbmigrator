@@ -5,6 +5,13 @@ import (
 	"fmt"
 )
 
+const (
+	statusError       = "error"
+	statusSuccess     = "success"
+	reportMessageText = "Created at: %s, File Name: %s, Status: %s, Message: %s\n"
+	timeFormat        = "2006-01-02 15:04:05"
+)
+
 // MigrationProvider is the base migrator interface
 type MigrationProvider interface {
 	Migrations(bool) ([]string, error)

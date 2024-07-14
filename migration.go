@@ -3,9 +3,13 @@ package migrator
 import (
 	"database/sql"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"regexp"
 	"sort"
+)
+
+const (
+	typeRollback = "rollback"
 )
 
 type migration struct {
@@ -24,7 +28,7 @@ func newMigrator(db *sql.DB) *migration {
 }
 
 func (m *migration) orderedMigrationFiles() ([]string, error) {
-	files, err := ioutil.ReadDir(m.migrationFilePath)
+	files, err := os.ReadDir(m.migrationFilePath)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +56,7 @@ func (m *migration) executeSQLFile(fileName string) (bool, error) {
 	}
 
 	fmt.Printf("Running migration '%s'\n", fileName)
-	content, err := ioutil.ReadFile(m.migrationFilePath + "/" + fileName)
+	content, err := os.ReadFile(m.migrationFilePath + "/" + fileName)
 	if err != nil {
 		return false, err
 	}
@@ -83,7 +87,7 @@ func (m *migration) executeRollbackSQLFile(fileName string) error {
 	}
 
 	fmt.Printf("Running rollback '%s'\n", rollbackFileName)
-	content, err := ioutil.ReadFile(m.migrationFilePath + "/" + rollbackFileName)
+	content, err := os.ReadFile(m.migrationFilePath + "/" + rollbackFileName)
 	if err != nil {
 		return err
 	}
@@ -133,7 +137,7 @@ func (m *migration) resolveRollbackFile(migrationFileName string) (string, error
 
 	result := regex.ReplaceAllStringFunc(migrationFileName, func(match string) string {
 		if match == rollbackReplaceRegex {
-			return "rollback"
+			return typeRollback
 		}
 		return "unknown"
 	})

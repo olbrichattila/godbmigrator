@@ -1,7 +1,6 @@
 package migrator_test
 
 import (
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -66,7 +65,7 @@ func resetTestMigrationPath() error {
 }
 
 func countFilesInDirectory(path string) (int, error) {
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		return 0, err
 	}
@@ -82,7 +81,7 @@ func countFilesInDirectory(path string) (int, error) {
 }
 
 func checkStringInFileNames(dirPath, searchString string) (bool, error) {
-	files, err := ioutil.ReadDir(dirPath)
+	files, err := os.ReadDir(dirPath)
 	if err != nil {
 		return false, err
 	}

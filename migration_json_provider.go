@@ -3,7 +3,7 @@ package migrator
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"sort"
 	"strings"
@@ -36,7 +36,7 @@ func newJSONMigration() (*jsonMigration, error) {
 }
 
 func (m *jsonMigration) ResetDate() {
-	m.timeString = time.Now().Format("2006-01-02 15:04:05")
+	m.timeString = time.Now().Format(timeFormat)
 }
 
 func (m *jsonMigration) Migrations(isLatest bool) ([]string, error) {
@@ -67,7 +67,7 @@ func (m *jsonMigration) loadMigrationFile() error {
 		return nil
 	}
 
-	jsonData, err := ioutil.ReadFile(jsonFileName)
+	jsonData, err := os.ReadFile(jsonFileName)
 	if err != nil {
 		return err
 	}
@@ -87,7 +87,7 @@ func (m *jsonMigration) saveMigrationFile() error {
 	}
 
 	jsonFileName := m.GetJSONFileName()
-	return ioutil.WriteFile(jsonFileName, jsonData, 0644)
+	return os.WriteFile(jsonFileName, jsonData, 0644)
 }
 
 func (m *jsonMigration) AddToMigration(fileName string) error {
@@ -130,10 +130,10 @@ func (m *jsonMigration) SetJSONFilePath(filePath string) {
 func (m *jsonMigration) AddToMigrationReport(fileName string, errorToLog error) error {
 	storeFileName := m.getJSONReportFileName()
 	message := "ok"
-	status := "success"
+	status := statusSuccess
 	if errorToLog != nil {
 		message = errorToLog.Error()
-		status = "error"
+		status = statusError
 	}
 
 	file, err := os.OpenFile(storeFileName, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
@@ -145,7 +145,7 @@ func (m *jsonMigration) AddToMigrationReport(fileName string, errorToLog error) 
 	newReportItem := jsonMigrationReport{
 		FileName:     fileName,
 		ResultStatus: status,
-		CreatedAt:    time.Now().Format("2006-01-02 15:04:05"),
+		CreatedAt:    time.Now().Format(timeFormat),
 		Message:      message,
 	}
 
@@ -187,7 +187,7 @@ func (m *jsonMigration) Report() (string, error) {
 	defer jsonFile.Close()
 
 	// Read the JSON file
-	byteValue, err := ioutil.ReadAll(jsonFile)
+	byteValue, err := io.ReadAll(jsonFile)
 	byteValue = append([]byte{'['}, byteValue...)
 	byteValue = append(byteValue, ']')
 
@@ -204,7 +204,7 @@ func (m *jsonMigration) Report() (string, error) {
 	var builder strings.Builder
 	for _, item := range collection {
 		str := fmt.Sprintf(
-			"Created at: %s, File Name: %s, Status: %s, Message: %s\n",
+			reportMessageText,
 			item.CreatedAt,
 			item.FileName,
 			item.ResultStatus,

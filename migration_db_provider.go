@@ -50,7 +50,7 @@ func newDbMigration(db *sql.DB) (*dbMigration, error) {
 }
 
 func (m *dbMigration) ResetDate() {
-	m.timeString = time.Now().Format("2006-01-02 15:04:05")
+	m.timeString = time.Now().Format(timeFormat)
 }
 
 func (m *dbMigration) Migrations(isLatest bool) ([]string, error) {
@@ -256,13 +256,13 @@ func (m *dbMigration) AddToMigrationReport(fileName string, errorToLog error) er
 	)
 
 	message := "ok"
-	status := "success"
+	status := statusSuccess
 	if errorToLog != nil {
 		message = errorToLog.Error()
-		status = "error"
+		status = statusError
 	}
 
-	createdAt := time.Now().Format("2006-01-02 15:04:05")
+	createdAt := time.Now().Format(timeFormat)
 
 	_, err := m.db.Exec(sql, fileName, createdAt, status, message)
 
@@ -284,7 +284,7 @@ func (m *dbMigration) Report() (string, error) {
 			return "", err
 		}
 		str := fmt.Sprintf(
-			"Created at: %s, File Name: %s, Status: %s, Message: %s\n",
+			reportMessageText,
 			row.CreatedAt,
 			row.FileName,
 			row.ResultStatus,

@@ -79,7 +79,7 @@ func copyFile(src, dst string) error {
 	return nil
 }
 
-func haveReportrecord(db *sql.DB, fileName, createdAt, status, message string) error {
+func haveReportRecord(db *sql.DB, fileName, createdAt, status, message string) error {
 	sql := `INSERT INTO migration_reports
 			(file_name, created_at, result_status, message)
 			VALUES (?,?,?,?)`

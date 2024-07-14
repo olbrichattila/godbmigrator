@@ -29,10 +29,10 @@ func (t *ReportDbTestSuite) TestDBMigratorMigrateAllTables() {
 	MigrationProvider, err := migrator.NewMigrationProvider("db", t.db)
 	t.Nil(err)
 
-	err = haveReportrecord(t.db, "FN1", "2006-01-01 00:00:00", "success", "ok")
+	err = haveReportRecord(t.db, "FN1", "2006-01-01 00:00:00", "success", "ok")
 	t.Nil(err)
 
-	err = haveReportrecord(t.db, "FN2", "2006-01-02 00:00:00", "error", "table not exists")
+	err = haveReportRecord(t.db, "FN2", "2006-01-02 00:00:00", "error", "table not exists")
 	t.Nil(err)
 
 	report, err := MigrationProvider.Report()

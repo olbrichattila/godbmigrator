@@ -9,6 +9,7 @@ func (p *postgresMigrationTableSQLProvider) createMigrationSQL() string {
 		created_at TIMESTAMP,
 		deleted_at TIMESTAMP
 	)`
+
 }
 
 func (p *postgresMigrationTableSQLProvider) createReportSQL() string {
