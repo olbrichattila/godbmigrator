@@ -11,6 +11,7 @@ import (
 )
 
 const testFixtureFolder = "./test_fixtures"
+const tablePrefix = "olb"
 
 type DbTestSuite struct {
 	suite.Suite
@@ -30,7 +31,7 @@ func (suite *DbTestSuite) TearDownTest() {
 }
 
 func (t *DbTestSuite) TestDBMigratorMigrateAllTables() {
-	MigrationProvider, err := migrator.NewMigrationProvider("db", t.db)
+	MigrationProvider, err := migrator.NewMigrationProvider("db", tablePrefix, t.db)
 	t.Nil(err)
 
 	err = migrator.Migrate(t.db, MigrationProvider, testFixtureFolder, 0)
@@ -41,7 +42,7 @@ func (t *DbTestSuite) TestDBMigratorMigrateAllTables() {
 
 	t.Equal(7, tableCount)
 
-	reportCount, err := rowCountInTable(t.db, "migration_reports")
+	reportCount, err := rowCountInTable(t.db, tablePrefix+"_migration_reports")
 	t.Nil(err)
 
 	t.Equal(5, reportCount)
@@ -50,7 +51,7 @@ func (t *DbTestSuite) TestDBMigratorMigrateAllTables() {
 func (t *DbTestSuite) TestDBMigratorMigrateSpeciedAmountOfTables() {
 	migrateCount := 2
 
-	MigrationProvider, err := migrator.NewMigrationProvider("db", t.db)
+	MigrationProvider, err := migrator.NewMigrationProvider("db", tablePrefix, t.db)
 	t.Nil(err)
 
 	err = migrator.Migrate(t.db, MigrationProvider, testFixtureFolder, migrateCount)
@@ -79,7 +80,7 @@ func (t *DbTestSuite) TestDBMigratorMigrateSpeciedAmountOfTables() {
 }
 
 func (t *DbTestSuite) TestDBMigratorRollbackAllTables() {
-	MigrationProvider, err := migrator.NewMigrationProvider("db", t.db)
+	MigrationProvider, err := migrator.NewMigrationProvider("db", tablePrefix, t.db)
 	t.Nil(err)
 
 	err = migrator.Migrate(t.db, MigrationProvider, testFixtureFolder, 0)
@@ -100,7 +101,7 @@ func (t *DbTestSuite) TestDBMigratorRollbackAllTables() {
 }
 
 func (t *DbTestSuite) TestDBMigratorRollbackSpecificAmountOfTables() {
-	MigrationProvider, err := migrator.NewMigrationProvider("db", t.db)
+	MigrationProvider, err := migrator.NewMigrationProvider("db", tablePrefix, t.db)
 	t.Nil(err)
 
 	err = migrator.Migrate(t.db, MigrationProvider, testFixtureFolder, 0)
@@ -129,7 +130,7 @@ func (t *DbTestSuite) TestDBMigratorRollbackSpecificAmountOfTables() {
 }
 
 func (t *DbTestSuite) TestDBMigratorRollsBackTablesInProperBatches() {
-	MigrationProvider, err := migrator.NewMigrationProvider("db", t.db)
+	MigrationProvider, err := migrator.NewMigrationProvider("db", tablePrefix, t.db)
 	t.Nil(err)
 
 	err = migrator.Migrate(t.db, MigrationProvider, testFixtureFolder, 1)
@@ -172,7 +173,7 @@ func (t *DbTestSuite) TestDBMigratorRollsBackTablesInProperBatches() {
 }
 
 func (t *DbTestSuite) TestDBRefresh() {
-	MigrationProvider, err := migrator.NewMigrationProvider("db", t.db)
+	MigrationProvider, err := migrator.NewMigrationProvider("db", tablePrefix, t.db)
 	t.Nil(err)
 
 	err = migrator.Migrate(t.db, MigrationProvider, testFixtureFolder, 3)

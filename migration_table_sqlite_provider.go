@@ -1,12 +1,15 @@
 package migrator
 
+import "fmt"
+
 type sqliteMigrationTableSQLProvider struct {
+	tablePrefix string
 }
 
 func (p *sqliteMigrationTableSQLProvider) createMigrationSQL() string {
-	return defaultMigrationCreateTableSQL
+	return fmt.Sprintf(defaultMigrationCreateTableSQL, p.tablePrefix)
 }
 
 func (p *sqliteMigrationTableSQLProvider) createReportSQL() string {
-	return defaultMigrationReportCreateTableSQL
+	return fmt.Sprintf(defaultMigrationReportCreateTableSQL, p.tablePrefix)
 }

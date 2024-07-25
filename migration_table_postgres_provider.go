@@ -1,22 +1,28 @@
 package migrator
 
+import "fmt"
+
 type postgresMigrationTableSQLProvider struct {
+	tablePrefix string
 }
 
 func (p *postgresMigrationTableSQLProvider) createMigrationSQL() string {
-	return `CREATE TABLE IF NOT EXISTS migrations (
+	sql := `CREATE TABLE IF NOT EXISTS %s_migrations (
 		file_name VARCHAR(255),
 		created_at TIMESTAMP,
 		deleted_at TIMESTAMP
 	)`
 
+	return fmt.Sprintf(sql, p.tablePrefix)
 }
 
 func (p *postgresMigrationTableSQLProvider) createReportSQL() string {
-	return `CREATE TABLE IF NOT EXISTS migration_reports (
+	sql := `CREATE TABLE IF NOT EXISTS %s_migration_reports (
 		file_name VARCHAR(255),
 		result_status VARCHAR(12),
 		created_at TIMESTAMP,
 		message TEXT
 	)`
+
+	return fmt.Sprintf(sql, p.tablePrefix)
 }

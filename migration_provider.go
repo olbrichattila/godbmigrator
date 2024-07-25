@@ -28,12 +28,12 @@ type MigrationProvider interface {
 // NewMigrationProvider returns a migration provider, which follows the provider type
 // The provider type can be json or db, error returned if the type incorrectly provided
 // db should be your database *sql.DB, which can be MySQL, Postgres, Sqlite or Firebird
-func NewMigrationProvider(providerType string, db *sql.DB) (MigrationProvider, error) {
+func NewMigrationProvider(providerType, tablePrefix string, db *sql.DB) (MigrationProvider, error) {
 	switch providerType {
 	case "json":
 		return newJSONMigration()
 	case "db":
-		return newDbMigration(db)
+		return newDbMigration(db, tablePrefix)
 	default:
 		return nil, fmt.Errorf("invalid migration provider type: %s", providerType)
 	}

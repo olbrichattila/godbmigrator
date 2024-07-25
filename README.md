@@ -4,7 +4,7 @@ This is a package, not to be used individually, but serves the purpose to add mi
 If you would like to use this as a command line tool, please use this package with the command line wrapper
 available here:
 
-The package is a lighweight installation, does not contain any driver.
+The package is a lightweight installation, does not contain any driver.
 
 https://github.com/olbrichattila/godbmigrator_cmd
 
@@ -55,13 +55,14 @@ The migration provider stores the migration status to:
 - database
 - (others to come)
 
-Currently the command line utility supports only SqLite, the build in solution shoud work, but not tested with oher databases
+## prefix is the database table prefix, if you set xyz, then it will create xyz_migration table for storing migrations
+Currently the command line utility supports only SqLite, the build in solution should work, but not tested with other databases
 
 ## Example migrate: (where the db is your *sql.DB)
 
 ```
 migrationFilePath := "./migration"
-MigrationProvider, err := migrator.NewMigrationProvider("json")
+MigrationProvider, err := migrator.NewMigrationProvider("json", "prefix")
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -75,7 +76,7 @@ if err != nil {
 ## Example rollback: (where the db is your *sql.DB)
 ```
 migrationFilePath := "./migration"
-MigrationProvider, err := migrator.NewMigrationProvider("json", nil)
+MigrationProvider, err := migrator.NewMigrationProvider("json", "prefix", nil)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -87,10 +88,10 @@ if err != nil {
 ```
 
 ## Example refresh: (where the db is your *sql.DB)
-Refresh is when everithing rolled back and migrated from scratch
+Refresh is when everything rolled back and migrated from scratch
 ```
 migrationFilePath := "./migration"
-MigrationProvider, err := migrator.NewMigrationProvider("json", nil)
+MigrationProvider, err := migrator.NewMigrationProvider("json", "prefix", nil)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -104,7 +105,7 @@ if err != nil {
 ## Migrate with database provider
 ```
 migrationFilePath := "./migration"
-MigrationProvider, err := migrator.NewMigrationProvider("db", db)
+MigrationProvider, err := migrator.NewMigrationProvider("db", "prefix", db)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -118,7 +119,7 @@ if err != nil {
 ## Rollback with database provider
 ```
 migrationFilePath := "./migration"
-MigrationProvider, err := migrator.NewMigrationProvider("db", db)
+MigrationProvider, err := migrator.NewMigrationProvider("db", "prefix", db)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -130,10 +131,10 @@ if err != nil {
 ```
 
 ## Refresh with database provider
-Refresh is when everithing rolled back and migrated from scratch
+Refresh is when everything rolled back and migrated from scratch
 ```
 migrationFilePath := "./migration"
-MigrationProvider, err := migrator.NewMigrationProvider("db", db)
+MigrationProvider, err := migrator.NewMigrationProvider("db", "prefix", db)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -147,7 +148,7 @@ if err != nil {
 ## Example, create new migration file:
 ```
 migrationFilePath := "./migration"
-err := migrator.AddNewMigrationFiles(migrationFilePath, "custom-text-or-emty")
+err := migrator.AddNewMigrationFiles(migrationFilePath, "custom-text-or-empty")
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -155,12 +156,12 @@ if err != nil {
 
 
 ## Migration report
-The appication stores a migration audiot report, where you can track rollback, migrations, errors thrown durring migration.
-Fetching the migratio report to a readable string:
+The application stores a migration audit report, where you can track rollback, migrations, errors thrown during migration.
+Fetching the migration report to a readable string:
 
 ```
 migrationFilePath := "./migration"
-MigrationProvider, err := migrator.NewMigrationProvider("db", db)
+MigrationProvider, err := migrator.NewMigrationProvider("db", "prefix", db)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -190,4 +191,4 @@ make run-test
 ## To be expected in next version
 
 - Store what was migrated as well even when migration error happened and rolled back
-- Report function, whick can create a short report (migrations and rollback in order) or a large report with the queries migrator executed (or tried to execute)
+- Report function, which can create a short report (migrations and rollback in order) or a large report with the queries migrator executed (or tried to execute)

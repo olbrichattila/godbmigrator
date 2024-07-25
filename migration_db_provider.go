@@ -18,6 +18,7 @@ const (
 
 type dbMigration struct {
 	db                  *sql.DB
+	tablePrefix         string
 	timeString          string
 	sqlBindingParameter string
 }
@@ -29,15 +30,23 @@ type reportRow struct {
 	Message      string
 }
 
-func newDbMigration(db *sql.DB) (*dbMigration, error) {
-	dbMigration := &dbMigration{db: db}
+func newDbMigration(db *sql.DB, tablePrefix string) (*dbMigration, error) {
+	if tablePrefix == "" {
+		tablePrefix = defaultTablePrefix
+	}
+
+	dbMigration := &dbMigration{
+		db:          db,
+		tablePrefix: tablePrefix,
+	}
+
 	dbMigration.ResetDate()
 	driverType, err := dbMigration.diverType()
 	if err != nil {
 		return nil, err
 	}
 	dbMigration.setSQLBindingParameter(driverType)
-	createSQLProvider, err := migrationTableProviderByDriverName(driverType)
+	createSQLProvider, err := migrationTableProviderByDriverName(driverType, tablePrefix)
 	if err != nil {
 		return nil, err
 	}
@@ -97,27 +106,32 @@ func (m *dbMigration) Migrations(isLatest bool) ([]string, error) {
 func (m *dbMigration) latestMigrations(lastMigrationDate string) (*sql.Rows, error) {
 	return m.db.Query(fmt.Sprintf(
 		`SELECT file_name 
-		 FROM migrations
+		 FROM %s_migrations
 		 WHERE created_at = %s 
 		 AND deleted_at IS NULL
 		 ORDER BY file_name DESC`,
+		m.tablePrefix,
 		m.getBindingParameter(1),
 	), lastMigrationDate)
 }
 
 func (m *dbMigration) allMigrations() (*sql.Rows, error) {
 	return m.db.Query(
-		`SELECT file_name 
-		 FROM migrations
-		 WHERE deleted_at IS NULL
-		 ORDER BY file_name DESC`,
+		fmt.Sprintf(
+			`SELECT file_name 
+			FROM %s_migrations
+			WHERE deleted_at IS NULL
+			ORDER BY file_name DESC`,
+			m.tablePrefix,
+		),
 	)
 }
 
 func (m *dbMigration) AddToMigration(fileName string) error {
-	sql := fmt.Sprintf(`INSERT INTO migrations  
+	sql := fmt.Sprintf(`INSERT INTO %s_migrations  
 			(file_name, created_at)
 			VALUES (%s, %s)`,
+		m.tablePrefix,
 		m.getBindingParameter(1),
 		m.getBindingParameter(2),
 	)
@@ -129,10 +143,11 @@ func (m *dbMigration) AddToMigration(fileName string) error {
 }
 
 func (m *dbMigration) RemoveFromMigration(fileName string) error {
-	sql := fmt.Sprintf(`UPDATE migrations 
+	sql := fmt.Sprintf(`UPDATE %s_migrations 
 			SET deleted_at = %s
 			WHERE file_name = %s
 			AND deleted_at IS NULL`,
+		m.tablePrefix,
 		m.getBindingParameter(1),
 		m.getBindingParameter(2),
 	)
@@ -144,9 +159,10 @@ func (m *dbMigration) RemoveFromMigration(fileName string) error {
 
 func (m *dbMigration) MigrationExistsForFile(fileName string) (bool, error) {
 	sql := fmt.Sprintf(`SELECT count(*) as cnt
-			FROM migrations
+			FROM %s_migrations
 			WHERE file_name = %s
 			AND deleted_at IS NULL`,
+		m.tablePrefix,
 		m.getBindingParameter(1),
 	)
 
@@ -182,9 +198,12 @@ func (m *dbMigration) init(createSQLProvider migrationTableSQLProvider) error {
 }
 
 func (m *dbMigration) lastMigrationDate() (string, error) {
-	sql := `SELECT max(created_at) as latest_migration
-			FROM migrations
-			WHERE deleted_at IS NULL`
+	sql := fmt.Sprintf(
+		`SELECT max(created_at) as latest_migration
+			FROM %s_migrations
+			WHERE deleted_at IS NULL`,
+		m.tablePrefix,
+	)
 
 	row := m.db.QueryRow(sql)
 	var maxdate string
@@ -246,9 +265,10 @@ func (m *dbMigration) SetJSONFilePath(_ string) {
 }
 
 func (m *dbMigration) AddToMigrationReport(fileName string, errorToLog error) error {
-	sql := fmt.Sprintf(`INSERT INTO migration_reports
+	sql := fmt.Sprintf(`INSERT INTO %s_migration_reports
 			(file_name, created_at, result_status, message)
 			VALUES (%s, %s, %s, %s)`,
+		m.tablePrefix,
 		m.getBindingParameter(1),
 		m.getBindingParameter(2),
 		m.getBindingParameter(3),
@@ -270,7 +290,12 @@ func (m *dbMigration) AddToMigrationReport(fileName string, errorToLog error) er
 }
 
 func (m *dbMigration) Report() (string, error) {
-	rows, err := m.db.Query(`SELECT  file_name, created_at, result_status, message FROM migration_reports`)
+	rows, err := m.db.Query(
+		fmt.Sprintf(
+			`SELECT file_name, created_at, result_status, message FROM %s_migration_reports`,
+			m.tablePrefix,
+		),
+	)
 	if err != nil {
 		return "", err
 	}

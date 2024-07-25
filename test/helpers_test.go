@@ -80,9 +80,10 @@ func copyFile(src, dst string) error {
 }
 
 func haveReportRecord(db *sql.DB, fileName, createdAt, status, message string) error {
-	sql := `INSERT INTO migration_reports
+	sql := `INSERT INTO %s_migration_reports
 			(file_name, created_at, result_status, message)
 			VALUES (?,?,?,?)`
+	sql = fmt.Sprintf(sql, tablePrefix)
 
 	_, err := db.Exec(sql, fileName, createdAt, status, message)
 
