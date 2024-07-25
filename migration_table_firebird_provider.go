@@ -19,7 +19,7 @@ func (p *firebirdMigrationTableSQLProvider) createMigrationSQL() string {
 			deleted_at TIMESTAMP);';
 		END`
 
-	return fmt.Sprint(sql, upperCasePrefix, upperCasePrefix)
+	return fmt.Sprintf(sql, upperCasePrefix, upperCasePrefix)
 }
 
 func (p *firebirdMigrationTableSQLProvider) createReportSQL() string {
@@ -33,5 +33,5 @@ func (p *firebirdMigrationTableSQLProvider) createReportSQL() string {
 			message BLOB SUB_TYPE TEXT);';
 		END`
 
-	return fmt.Sprint(sql, upperCasePrefix, upperCasePrefix)
+	return fmt.Sprintf(sql, upperCasePrefix, upperCasePrefix)
 }
