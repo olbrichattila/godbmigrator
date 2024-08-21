@@ -14,7 +14,7 @@ func (p *firebirdMigrationTableSQLProvider) createMigrationSQL() string {
 	sql := `EXECUTE BLOCK AS BEGIN
 		if (not exists(select 1 from rdb$relations where rdb$relation_name = '%s_MIGRATIONS')) then
 		execute statement 'CREATE TABLE %s_MIGRATIONS (
-			file_name VARCHAR(35),
+			file_name VARCHAR(255),
 			created_at VARCHAR(35),
 			deleted_at TIMESTAMP);';
 		END`
@@ -27,7 +27,7 @@ func (p *firebirdMigrationTableSQLProvider) createReportSQL() string {
 	sql := `EXECUTE BLOCK AS BEGIN
 		if (not exists(select 1 from rdb$relations where rdb$relation_name = '%s_MIGRATION_REPORTS')) then
 		execute statement 'CREATE TABLE %s_MIGRATION_REPORTS (
-			file_name VARCHAR(35),
+			file_name VARCHAR(255),
 			result_status VARCHAR(12),
 			created_at VARCHAR(35),
 			message BLOB SUB_TYPE TEXT);';
