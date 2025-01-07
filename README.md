@@ -192,3 +192,7 @@ make run-test
 
 - Store what was migrated as well even when migration error happened and rolled back
 - Report function, which can create a short report (migrations and rollback in order) or a large report with the queries migrator executed (or tried to execute)
+
+## About me:
+- Learn more about me on my personal website. https://attilaolbrich.co.uk/menu/my-story
+- Check out my latest blog blog at my personal page. https://attilaolbrich.co.uk/blog/1/single
