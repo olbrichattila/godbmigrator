@@ -30,7 +30,8 @@ type reportRow struct {
 	Message      string
 }
 
-type migrationRow struct {
+// MigrationRow returns with migration file name, and Checksum calculated from the file content
+type MigrationRow struct {
 	Migration string
 	Checksum string
 }
@@ -67,8 +68,8 @@ func (m *dbMigration) ResetDate() {
 	m.timeString = time.Now().Format(timeFormat)
 }
 
-func (m *dbMigration) Migrations(isLatest bool) ([]migrationRow, error) {
-	var migrationList []migrationRow
+func (m *dbMigration) Migrations(isLatest bool) ([]MigrationRow, error) {
+	var migrationList []MigrationRow
 	var rows *sql.Rows
 	var err error
 
@@ -94,7 +95,7 @@ func (m *dbMigration) Migrations(isLatest bool) ([]migrationRow, error) {
 	defer rows.Close()
 
 	
-	var migration migrationRow
+	var migration MigrationRow
 	for rows.Next() {
 		err := rows.Scan(&migration.Migration, &migration.Checksum)
 		if err != nil {

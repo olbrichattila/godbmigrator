@@ -14,7 +14,7 @@ const (
 
 // MigrationProvider is the base migrator interface
 type MigrationProvider interface {
-	Migrations(bool) ([]migrationRow, error)
+	Migrations(bool) ([]MigrationRow, error)
 	AddToMigration(string, string) error
 	RemoveFromMigration(string) error
 	MigrationExistsForFile(string) (bool, error)

@@ -138,7 +138,7 @@ func ChecksumValidation(
 		}
 	}
 
-	return nil
+	return errors
 }
 
 func rollback(

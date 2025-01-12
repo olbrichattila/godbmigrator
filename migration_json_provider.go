@@ -14,7 +14,7 @@ const migrationJSONFileName = "./migrations/migrations.json"
 const migrationJSONReportFileName = "./migrations/migration_report.json"
 
 type jsonMigration struct {
-	data              map[string]migrationRow
+	data              map[string]MigrationRow
 	timeString        string
 	jsonFileName      string
 	jsonReportFileName string
@@ -39,9 +39,9 @@ func (m *jsonMigration) ResetDate() {
 	m.timeString = time.Now().Format(timeFormat)
 }
 
-func (m *jsonMigration) Migrations(isLatest bool) ([]migrationRow, error) {
+func (m *jsonMigration) Migrations(isLatest bool) ([]MigrationRow, error) {
 	var latestDate string
-	var filtered []migrationRow
+	var filtered []MigrationRow
 
 	for _, dateString := range m.data {
 		if latestDate == "" || dateString.Migration > latestDate {
@@ -51,7 +51,7 @@ func (m *jsonMigration) Migrations(isLatest bool) ([]migrationRow, error) {
 
 	for fileName, dateString := range m.data {
 		if dateString.Migration == latestDate || !isLatest {
-			filtered = append(filtered, migrationRow{Migration: fileName})
+			filtered = append(filtered, MigrationRow{Migration: fileName})
 		}
 	}
 
@@ -63,7 +63,7 @@ func (m *jsonMigration) Migrations(isLatest bool) ([]migrationRow, error) {
 }
 
 func (m *jsonMigration) loadMigrationFile() error {
-	m.data = make(map[string]migrationRow)
+	m.data = make(map[string]MigrationRow)
 	jsonFileName := m.GetJSONFileName()
 	if !fileExists(jsonFileName) {
 		return nil
@@ -93,7 +93,7 @@ func (m *jsonMigration) saveMigrationFile() error {
 }
 
 func (m *jsonMigration) AddToMigration(fileName, checksum string) error {
-	migration := migrationRow{Migration: m.timeString, Checksum: checksum}
+	migration := MigrationRow{Migration: m.timeString, Checksum: checksum}
 	m.data[fileName] = migration
 
 	return m.saveMigrationFile()
