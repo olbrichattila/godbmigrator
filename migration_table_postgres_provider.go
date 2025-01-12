@@ -10,7 +10,8 @@ func (p *postgresMigrationTableSQLProvider) createMigrationSQL() string {
 	sql := `CREATE TABLE IF NOT EXISTS %s_migrations (
 		file_name VARCHAR(255),
 		created_at TIMESTAMP,
-		deleted_at TIMESTAMP
+		deleted_at TIMESTAMP,
+		checksum CHAR(32)
 	)`
 
 	return fmt.Sprintf(sql, p.tablePrefix)

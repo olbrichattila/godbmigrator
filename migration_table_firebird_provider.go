@@ -16,7 +16,8 @@ func (p *firebirdMigrationTableSQLProvider) createMigrationSQL() string {
 		execute statement 'CREATE TABLE %s_MIGRATIONS (
 			file_name VARCHAR(255),
 			created_at VARCHAR(35),
-			deleted_at TIMESTAMP);';
+			deleted_at TIMESTAMP)
+			checksum CHAR(32);';
 		END`
 
 	return fmt.Sprintf(sql, upperCasePrefix, upperCasePrefix)

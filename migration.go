@@ -1,7 +1,9 @@
 package migrator
 
 import (
+	"crypto/md5"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"regexp"
@@ -61,9 +63,11 @@ func (m *migration) executeSQLFile(fileName string) (bool, error) {
 		return false, err
 	}
 
-	err = m.executeSQL(string(content))
+	contentString := string(content)
+	err = m.executeSQL(contentString)
 	if err == nil {
-		err = m.MigrationProvider.AddToMigration(fileName)
+		hash := m.getHash(contentString)
+		err = m.MigrationProvider.AddToMigration(fileName, hash)
 		if err != nil {
 			return false, err
 		}
@@ -147,4 +151,9 @@ func (m *migration) resolveRollbackFile(migrationFileName string) (string, error
 	}
 
 	return result, nil
+}
+
+func (m *migration) getHash(sql string) string {
+	hash := md5.Sum([]byte(sql))
+	return hex.EncodeToString(hash[:])
 }

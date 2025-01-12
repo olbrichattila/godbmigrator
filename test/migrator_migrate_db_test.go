@@ -10,8 +10,11 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-const testFixtureFolder = "./test_fixtures"
-const tablePrefix = "olb"
+const (
+	testFixtureFolder = "./test_fixtures"
+	testChecksumFixtureFolder = "./test_fixtures_checksum"
+	tablePrefix = "olb"
+)
 
 type DbTestSuite struct {
 	suite.Suite
@@ -48,7 +51,7 @@ func (t *DbTestSuite) TestDBMigratorMigrateAllTables() {
 	t.Equal(5, reportCount)
 }
 
-func (t *DbTestSuite) TestDBMigratorMigrateSpeciedAmountOfTables() {
+func (t *DbTestSuite) TestDBMigratorMigrateSpecifiedAmountOfTables() {
 	migrateCount := 2
 
 	MigrationProvider, err := migrator.NewMigrationProvider("db", tablePrefix, t.db)
@@ -191,4 +194,46 @@ func (t *DbTestSuite) TestDBRefresh() {
 	t.Nil(err)
 
 	t.Equal(7, tableCount)
+}
+
+
+func (t *DbTestSuite) TestDBChecksum() {
+	MigrationProvider, err := migrator.NewMigrationProvider("db", tablePrefix, t.db)
+	t.Nil(err)
+
+	err = migrator.Migrate(t.db, MigrationProvider, testFixtureFolder, 3)
+	t.Nil(err)
+
+	testFixtureFile := "2023-07-27_17_57_47-migrate-fixture.sql";
+
+	checksum, err := getChecksumFromTable(t.db, testFixtureFile)
+
+	t.Nil(err)
+
+	hash, err := calculateFileMD5(testFixtureFolder + "/" + testFixtureFile)
+
+	t.Nil(err)
+	t.Equal(hash, checksum)
+}
+
+func (t *DbTestSuite) TestDBChecksumValidator() {
+	MigrationProvider, err := migrator.NewMigrationProvider("db", tablePrefix, t.db)
+	t.Nil(err)
+
+	err = migrator.Migrate(t.db, MigrationProvider, testFixtureFolder, 3)
+	t.Nil(err)
+
+	errors := migrator.ChecksumValidation(t.db, MigrationProvider, testChecksumFixtureFolder)
+	t.Len(errors, 1)
+}
+
+func (t *DbTestSuite) TestJSONChecksumValidator() {
+	MigrationProvider, err := migrator.NewMigrationProvider("json", tablePrefix, t.db)
+	t.Nil(err)
+
+	err = migrator.Migrate(t.db, MigrationProvider, testFixtureFolder, 3)
+	t.Nil(err)
+
+	errors := migrator.ChecksumValidation(t.db, MigrationProvider, testChecksumFixtureFolder)
+	t.Len(errors, 1)
 }

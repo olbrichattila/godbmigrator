@@ -1,6 +1,6 @@
-# Test packate usage
+# Test package usage
 
-From rood direcory use make run-test or:
+From root directory use make run-test or:
 
 ```
 cd ./test
