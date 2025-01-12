@@ -2,8 +2,11 @@
 package migrator
 
 import (
+	"crypto/md5"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
+	"io"
 	"os"
 	"time"
 )
@@ -71,7 +74,7 @@ func Migrate(
 	return nil
 }
 
-// Report return a report of the alredy executed migrations
+// Report return a report of the already executed migrations
 func Report(
 	db *sql.DB,
 	migrationProvider MigrationProvider,
@@ -100,6 +103,44 @@ func AddNewMigrationFiles(migrationFilePath, customText string) error {
 	return nil
 }
 
+// ChecksumValidation validates if the checksums are correct and nothing changed
+func ChecksumValidation(
+	db *sql.DB,
+	migrationProvider MigrationProvider,
+	migrationFilePath string,
+) []string {
+	errors := make([]string, 0)
+	m := newMigrator(db)
+	m.migrationFilePath = migrationFilePath
+	m.MigrationProvider = migrationProvider
+	m.MigrationProvider.SetJSONFilePath(migrationFilePath)
+	migrations, err := m.MigrationProvider.Migrations(false)
+	if err != nil {
+		errors = append(errors, err.Error())
+		return errors
+	}
+
+	for _, mig := range migrations {
+		filePath := m.migrationFilePath + "/" + mig.Migration
+		if !fileExists(filePath) {
+			errors = append(errors, fmt.Sprintf("migration file for checksum does not %s exists", mig.Migration))
+			continue
+		}
+
+		md5, err := calculateFileMD5(m.migrationFilePath + "/" + mig.Migration)
+		if err != nil {
+			errors = append(errors, fmt.Sprintf("migration file for checksum could not be opened %s exists", mig.Migration))
+			continue
+		}
+
+		if md5 != mig.Checksum {
+			errors = append(errors, fmt.Sprintf("md5 error for file %s, md5 %s/%s", mig.Migration, md5, mig.Checksum))
+		}
+	}
+
+	return nil
+}
+
 func rollback(
 	db *sql.DB,
 	migrationProvider MigrationProvider,
@@ -122,14 +163,14 @@ func rollback(
 	}
 
 	rollbackCount := 0
-	for _, fileName := range migrations {
+	for _, mig := range migrations {
 		if count > 0 {
 			if rollbackCount == count {
 				break
 			}
 		}
 
-		err = m.executeRollbackSQLFile(fileName)
+		err = m.executeRollbackSQLFile(mig.Migration)
 		if err != nil {
 			return err
 		}
@@ -175,4 +216,19 @@ func createNewMigrationFiles(migrationFilePath, customText string, isRollback bo
 func fileExists(filename string) bool {
 	_, err := os.Stat(filename)
 	return !os.IsNotExist(err)
+}
+
+func calculateFileMD5(filePath string) (string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to open file: %w", err)
+	}
+	defer file.Close()
+
+	hash := md5.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return "", fmt.Errorf("failed to calculate hash: %w", err)
+	}
+	
+	return hex.EncodeToString(hash.Sum(nil)), nil
 }

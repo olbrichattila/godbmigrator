@@ -1,7 +1,9 @@
 package migrator_test
 
 import (
+	"crypto/md5"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
@@ -22,7 +24,7 @@ func tableCountInDatabase(db *sql.DB) (int, error) {
 	var count int
 	err := db.QueryRow(query).Scan(&count)
 	if err != nil {
-		return 0, nil
+		return 0, err
 	}
 
 	return count, err
@@ -34,23 +36,27 @@ func rowCountInTable(db *sql.DB, tableName string) (int, error) {
 	var count int
 	err := db.QueryRow(query).Scan(&count)
 	if err != nil {
-		return 0, nil
+		return 0, err
 	}
 
-	return count, err
+	return count, nil
 }
+
+func getChecksumFromTable(db *sql.DB, fileName string) (string, error) {
+	query := fmt.Sprintf("SELECT checksum from %s_migrations WHERE file_name=?", tablePrefix)
+
+	var checksum string
+	err := db.QueryRow(query, fileName).Scan(&checksum)
+	if err != nil {
+		return "", err
+	}
+
+	return checksum, nil
+}
+
 
 func resetJsonFile() error {
 	return os.Remove(testFixtureFolder + "/migrations.json")
-}
-
-func initFolder(fullPath string) error {
-	err := os.MkdirAll(fullPath, os.ModePerm)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func copyFile(src, dst string) error {
@@ -88,4 +94,19 @@ func haveReportRecord(db *sql.DB, fileName, createdAt, status, message string) e
 	_, err := db.Exec(sql, fileName, createdAt, status, message)
 
 	return err
+}
+
+func calculateFileMD5(filePath string) (string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to open file: %w", err)
+	}
+	defer file.Close()
+
+	hash := md5.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return "", fmt.Errorf("failed to calculate hash: %w", err)
+	}
+	
+	return hex.EncodeToString(hash.Sum(nil)), nil
 }

@@ -154,6 +154,22 @@ if err != nil {
 }
 ```
 
+## Checksum Validator:
+You can validate whether any migration file has changed since it was applied.
+```
+	MigrationProvider, err := migrator.NewMigrationProvider("db", tablePrefix, t.db)
+	if err != nil {
+        panic("Error: " + err.Error())
+    }
+
+	err = migrator.Migrate(t.db, MigrationProvider, testFixtureFolder, 3)
+	if err != nil {
+        panic("Error: " + err.Error())
+    }
+
+	errors := migrator.ChecksumValidation(t.db, MigrationProvider, testChecksumFixtureFolder)
+	// 'errors' contains a list of error strings ([]string). If empty, there are no validation errors.
+```
 
 ## Migration report
 The application stores a migration audit report, where you can track rollback, migrations, errors thrown during migration.

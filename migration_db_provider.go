@@ -30,6 +30,11 @@ type reportRow struct {
 	Message      string
 }
 
+type migrationRow struct {
+	Migration string
+	Checksum string
+}
+
 func newDbMigration(db *sql.DB, tablePrefix string) (*dbMigration, error) {
 	if tablePrefix == "" {
 		tablePrefix = defaultTablePrefix
@@ -62,8 +67,8 @@ func (m *dbMigration) ResetDate() {
 	m.timeString = time.Now().Format(timeFormat)
 }
 
-func (m *dbMigration) Migrations(isLatest bool) ([]string, error) {
-	var migrationList []string
+func (m *dbMigration) Migrations(isLatest bool) ([]migrationRow, error) {
+	var migrationList []migrationRow
 	var rows *sql.Rows
 	var err error
 
@@ -88,24 +93,24 @@ func (m *dbMigration) Migrations(isLatest bool) ([]string, error) {
 
 	defer rows.Close()
 
-	if err == nil {
-		var migration string
-		for rows.Next() {
-			err := rows.Scan(&migration)
-			if err != nil {
-				return nil, err
-			}
-			migrationList = append(migrationList, migration)
+	
+	var migration migrationRow
+	for rows.Next() {
+		err := rows.Scan(&migration.Migration, &migration.Checksum)
+		if err != nil {
+			return nil, err
 		}
-
+		migrationList = append(migrationList, migration)
 	}
+
+	
 
 	return migrationList, nil
 }
 
 func (m *dbMigration) latestMigrations(lastMigrationDate string) (*sql.Rows, error) {
 	return m.db.Query(fmt.Sprintf(
-		`SELECT file_name 
+		`SELECT file_name, checksum 
 		 FROM %s_migrations
 		 WHERE created_at = %s 
 		 AND deleted_at IS NULL
@@ -118,7 +123,7 @@ func (m *dbMigration) latestMigrations(lastMigrationDate string) (*sql.Rows, err
 func (m *dbMigration) allMigrations() (*sql.Rows, error) {
 	return m.db.Query(
 		fmt.Sprintf(
-			`SELECT file_name 
+			`SELECT file_name, checksum 
 			FROM %s_migrations
 			WHERE deleted_at IS NULL
 			ORDER BY file_name DESC`,
@@ -127,16 +132,17 @@ func (m *dbMigration) allMigrations() (*sql.Rows, error) {
 	)
 }
 
-func (m *dbMigration) AddToMigration(fileName string) error {
+func (m *dbMigration) AddToMigration(fileName, checksum string) error {
 	sql := fmt.Sprintf(`INSERT INTO %s_migrations  
-			(file_name, created_at)
-			VALUES (%s, %s)`,
+			(file_name, created_at, checksum)
+			VALUES (%s, %s, %s)`,
 		m.tablePrefix,
 		m.getBindingParameter(1),
 		m.getBindingParameter(2),
+		m.getBindingParameter(3),
 	)
 
-	_, err := m.db.Exec(sql, fileName, m.timeString)
+	_, err := m.db.Exec(sql, fileName, m.timeString, checksum)
 
 	return err
 

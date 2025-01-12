@@ -13,7 +13,9 @@ const (
 	defaultMigrationCreateTableSQL = `CREATE TABLE IF NOT EXISTS %s_migrations (
 		file_name VARCHAR(255),
 		created_at DATETIME,
-		deleted_at DATETIME)`
+		deleted_at DATETIME,
+		checksum CHAR(32)
+		)`
 )
 
 type migrationTableSQLProvider interface {

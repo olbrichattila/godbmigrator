@@ -14,10 +14,10 @@ const migrationJSONFileName = "./migrations/migrations.json"
 const migrationJSONReportFileName = "./migrations/migration_report.json"
 
 type jsonMigration struct {
-	data              map[string]string
+	data              map[string]migrationRow
 	timeString        string
 	jsonFileName      string
-	jsonReporFileName string
+	jsonReportFileName string
 }
 
 type jsonMigrationReport struct {
@@ -39,29 +39,31 @@ func (m *jsonMigration) ResetDate() {
 	m.timeString = time.Now().Format(timeFormat)
 }
 
-func (m *jsonMigration) Migrations(isLatest bool) ([]string, error) {
+func (m *jsonMigration) Migrations(isLatest bool) ([]migrationRow, error) {
 	var latestDate string
-	var filtered []string
+	var filtered []migrationRow
 
 	for _, dateString := range m.data {
-		if latestDate == "" || dateString > latestDate {
-			latestDate = dateString
+		if latestDate == "" || dateString.Migration > latestDate {
+			latestDate = dateString.Migration
 		}
 	}
 
 	for fileName, dateString := range m.data {
-		if dateString == latestDate || !isLatest {
-			filtered = append(filtered, fileName)
+		if dateString.Migration == latestDate || !isLatest {
+			filtered = append(filtered, migrationRow{Migration: fileName})
 		}
 	}
 
-	sort.Sort(sort.Reverse(sort.StringSlice(filtered)))
+	sort.Slice(filtered, func(i, j int) bool {
+		return filtered[i].Migration > filtered[j].Migration
+	})
 
 	return filtered, nil
 }
 
 func (m *jsonMigration) loadMigrationFile() error {
-	m.data = make(map[string]string)
+	m.data = make(map[string]migrationRow)
 	jsonFileName := m.GetJSONFileName()
 	if !fileExists(jsonFileName) {
 		return nil
@@ -90,8 +92,9 @@ func (m *jsonMigration) saveMigrationFile() error {
 	return os.WriteFile(jsonFileName, jsonData, 0644)
 }
 
-func (m *jsonMigration) AddToMigration(fileName string) error {
-	m.data[fileName] = m.timeString
+func (m *jsonMigration) AddToMigration(fileName, checksum string) error {
+	migration := migrationRow{Migration: m.timeString, Checksum: checksum}
+	m.data[fileName] = migration
 
 	return m.saveMigrationFile()
 }
@@ -103,7 +106,7 @@ func (m *jsonMigration) RemoveFromMigration(fileName string) error {
 }
 
 func (m *jsonMigration) MigrationExistsForFile(fileName string) (bool, error) {
-	return m.data[fileName] != "", nil
+	return m.data[fileName].Migration != "", nil
 }
 
 func (m *jsonMigration) GetJSONFileName() string {
@@ -119,12 +122,12 @@ func (m *jsonMigration) getJSONReportFileName() string {
 		return migrationJSONReportFileName
 	}
 
-	return m.jsonReporFileName
+	return m.jsonReportFileName
 }
 
 func (m *jsonMigration) SetJSONFilePath(filePath string) {
 	m.jsonFileName = filePath + "/migrations.json"
-	m.jsonReporFileName = filePath + "/migration_reports.json"
+	m.jsonReportFileName = filePath + "/migration_reports.json"
 }
 
 func (m *jsonMigration) AddToMigrationReport(fileName string, errorToLog error) error {
