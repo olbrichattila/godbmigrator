@@ -141,6 +141,30 @@ func ChecksumValidation(
 	return errors
 }
 
+func SaveBaseline(
+	db *sql.DB,
+	migrationFilePath string,
+) error {
+	baseliner, err := GetBaseliner(db)
+	if err != nil {
+		return err
+	}
+
+	return baseliner.Save(migrationFilePath)
+}
+
+func LoadBaseline(
+	db *sql.DB,
+	migrationFilePath string,
+) error {
+	baseliner, err := GetBaseliner(db)
+	if err != nil {
+		return err
+	}
+
+	return baseliner.Load(migrationFilePath)
+}
+
 func rollback(
 	db *sql.DB,
 	migrationProvider MigrationProvider,
