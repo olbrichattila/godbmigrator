@@ -16,6 +16,10 @@ import (
 func main() {
 	migrationFilePath := "./migrations"
 	dbType, provider, function, count, add := params()
+	createNewMigrationTables := true
+	if function == "baseline-load" {
+		createNewMigrationTables = false
+	}
 
 	fmt.Printf("Running with %s, %s, %s, %d %s\n", dbType, provider, function, count, add)
 
@@ -29,7 +33,7 @@ func main() {
 	}
 	defer db.Close()
 
-	MigrationProvider, err := migrator.NewMigrationProvider(provider, "", db)
+	MigrationProvider, err := migrator.NewMigrationProvider(provider, "", db, createNewMigrationTables)
 	if err != nil {
 		panic(err.Error())
 	}

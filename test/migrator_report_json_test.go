@@ -32,7 +32,7 @@ func (t *ReportTestSuite) TestDBMigratorMigrateAllTables() {
 	err := copyFile(reportSourceFixture, reportDestinationFixture)
 	t.Nil(err)
 
-	MigrationProvider, err := migrator.NewMigrationProvider("json", tablePrefix, t.db)
+	MigrationProvider, err := migrator.NewMigrationProvider("json", tablePrefix, t.db, true)
 	MigrationProvider.SetJSONFilePath(testFixtureFolder)
 	t.Nil(err)
 

@@ -30,9 +30,29 @@ type jsonMigrationReport struct {
 func newJSONMigration() (*jsonMigration, error) {
 	jsonMigration := &jsonMigration{}
 	jsonMigration.ResetDate()
-	err := jsonMigration.loadMigrationFile()
+	
 
-	return jsonMigration, err
+	return jsonMigration, nil
+}
+
+func (m *jsonMigration) CreateMigrationTables() error {
+	m.data = make(map[string]MigrationRow)
+	jsonFileName := m.GetJSONFileName()
+	if !fileExists(jsonFileName) {
+		return nil
+	}
+
+	jsonData, err := os.ReadFile(jsonFileName)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(jsonData, &m.data)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (m *jsonMigration) ResetDate() {
@@ -62,25 +82,6 @@ func (m *jsonMigration) Migrations(isLatest bool) ([]MigrationRow, error) {
 	return filtered, nil
 }
 
-func (m *jsonMigration) loadMigrationFile() error {
-	m.data = make(map[string]MigrationRow)
-	jsonFileName := m.GetJSONFileName()
-	if !fileExists(jsonFileName) {
-		return nil
-	}
-
-	jsonData, err := os.ReadFile(jsonFileName)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(jsonData, &m.data)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 func (m *jsonMigration) saveMigrationFile() error {
 	jsonData, err := json.Marshal(&m.data)

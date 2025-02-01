@@ -26,7 +26,7 @@ func (suite *ReportDbTestSuite) TearDownTest() {
 }
 
 func (t *ReportDbTestSuite) TestDBMigratorMigrateAllTables() {
-	MigrationProvider, err := migrator.NewMigrationProvider("db", tablePrefix, t.db)
+	MigrationProvider, err := migrator.NewMigrationProvider("db", tablePrefix, t.db, true)
 	t.Nil(err)
 
 	err = haveReportRecord(t.db, "FN1", "2006-01-01 00:00:00", "success", "ok")

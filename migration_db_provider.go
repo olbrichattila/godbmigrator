@@ -47,22 +47,43 @@ func newDbMigration(db *sql.DB, tablePrefix string) (*dbMigration, error) {
 	}
 
 	dbMigration.ResetDate()
-	driverType, err := dbMigration.diverType()
-	if err != nil {
-		return nil, err
-	}
-	dbMigration.setSQLBindingParameter(driverType)
-	createSQLProvider, err := migrationTableProviderByDriverName(driverType, tablePrefix)
-	if err != nil {
-		return nil, err
-	}
+	// driverType, err := dbMigration.diverType()
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// dbMigration.setSQLBindingParameter(driverType)
+	// createSQLProvider, err := migrationTableProviderByDriverName(driverType, tablePrefix)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	err = dbMigration.init(createSQLProvider)
-	if err != nil {
-		return nil, err
-	}
+	// err = dbMigration.init(createSQLProvider)
+	// if err != nil {
+	// 	return nil, err
+	// }
 	return dbMigration, nil
 }
+
+// CreateMigrationTables creates the migration tables
+func (m *dbMigration) CreateMigrationTables() error {
+	driverType, err := m.diverType()
+	if err != nil {
+		return err
+	}
+	m.setSQLBindingParameter(driverType)
+	createSQLProvider, err := migrationTableProviderByDriverName(driverType, m.tablePrefix)
+	if err != nil {
+		return err
+	}
+
+	err = m.init(createSQLProvider)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 
 func (m *dbMigration) ResetDate() {
 	m.timeString = time.Now().Format(timeFormat)
