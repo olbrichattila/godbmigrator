@@ -5,11 +5,14 @@ go 1.22.0
 toolchain go1.23.5
 
 require (
+	github.com/go-sql-driver/mysql v1.8.1
+	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/nakagami/firebirdsql v0.9.14
 )
 
 require (
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
 	github.com/nakagami/chacha20 v0.1.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect

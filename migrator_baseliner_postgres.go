@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func NewPostgresBaseliner(db *sql.DB) Baseliner {
+func NewPostgresBaseliner(db *sql.DB) SpecificBaseliner {
 	return &blPostgres{db: db}
 }
 
@@ -13,10 +13,10 @@ type blPostgres struct {
 	db *sql.DB
 }
 
-func (*blPostgres) Save(migrationFilePath string) error {
+func (*blPostgres) GetSchemaData(callback func(string, bool) error) error {
 	return fmt.Errorf("not implemented")
 }
 
-func (b *blPostgres) Load(migrationFilePath string) error {
-	return fmt.Errorf("not yet implemented")
+func (b *blPostgres) GetDb() *sql.DB {
+	return b.db
 }

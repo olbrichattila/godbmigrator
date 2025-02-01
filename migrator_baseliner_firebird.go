@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func NewFirebirdBaseliner(db *sql.DB) Baseliner {
+func NewFirebirdBaseliner(db *sql.DB) SpecificBaseliner {
 	return &blFirebird{db: db}
 }
 
@@ -13,10 +13,10 @@ type blFirebird struct {
 	db *sql.DB
 }
 
-func (*blFirebird) Save(migrationFilePath string) error {
+func (*blFirebird) GetSchemaData(callback func(string, bool) error) error {
 	return fmt.Errorf("not implemented")
 }
 
-func (b *blFirebird) Load(migrationFilePath string) error {
-	return fmt.Errorf("not yet implemented")
+func (b *blFirebird) GetDb() *sql.DB {
+	return b.db
 }
