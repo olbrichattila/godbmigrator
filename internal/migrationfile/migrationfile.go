@@ -81,14 +81,14 @@ func (m *mFile) ResolveRollbackFile(migrationFileName string) (string, error) {
 		return "unknown"
 	})
 
-	if !fileExists(m.migrationFilePath + "/" + result) {
+	if !m.fileExists(m.migrationFilePath + "/" + result) {
 		return "", fmt.Errorf("file does not %s exists", result)
 	}
 
 	return result, nil
 }
 
-func fileExists(filename string) bool {
+func (m *mFile) fileExists(filename string) bool {
 	_, err := os.Stat(filename)
 	return !os.IsNotExist(err)
 }
