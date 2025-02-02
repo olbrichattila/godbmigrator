@@ -1,1 +1,0 @@
-CREATE TABLE t4 (name TEXT)

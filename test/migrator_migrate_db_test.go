@@ -182,10 +182,9 @@ func (t *DbTestSuite) TestDBChecksum() {
 	err := migrator.Migrate(t.db, tablePrefix, testFixtureFolder, 3)
 	t.Nil(err)
 
-	testFixtureFile := "2023-07-27_17_57_47-migrate-fixture.sql"
+	testFixtureFile := "2023-07-27_17_57_47-fixture.sql"
 
 	checksum, err := getChecksumFromTable(t.db, testFixtureFile)
-
 	t.Nil(err)
 
 	hash, err := calculateFileMD5(testFixtureFolder + "/" + testFixtureFile)

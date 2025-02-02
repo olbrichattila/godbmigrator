@@ -21,7 +21,7 @@ func Rollback(
 		return err
 	}
 
-	return m.Rollback(db, provider, migrationFilePath, count, false)
+	return m.Rollback(provider, migrationFilePath, count, false)
 }
 
 // Refresh runs a full rollback and migrate again
@@ -35,12 +35,12 @@ func Refresh(
 		return err
 	}
 
-	err = m.Rollback(db, provider, migrationFilePath, 0, true)
+	err = m.Rollback(provider, migrationFilePath, 0, true)
 	if err != nil {
 		return err
 	}
 
-	return m.Migrate(db, provider, migrationFilePath, 0)
+	return m.Migrate(provider, migrationFilePath, 0)
 }
 
 // Migrate execute migrations
@@ -55,7 +55,7 @@ func Migrate(
 		return err
 	}
 
-	return m.Migrate(db, provider, migrationFilePath, count)
+	return m.Migrate(provider, migrationFilePath, count)
 }
 
 // Report return a report of the already executed migrations
@@ -69,7 +69,7 @@ func Report(
 		return "", err
 	}
 
-	return m.Report(db, provider, migrationFilePath)
+	return m.Report(provider, migrationFilePath)
 }
 
 // AddNewMigrationFiles adds a new blank migration file and a rollback file
@@ -94,7 +94,7 @@ func ChecksumValidation(
 		return []string{err.Error()}
 	}
 
-	return m.ChecksumValidation(db, provider, migrationFilePath)
+	return m.ChecksumValidation(provider, migrationFilePath)
 }
 
 // SaveBaseline will save the current status of your database as baseline, which means the migration can start from this point

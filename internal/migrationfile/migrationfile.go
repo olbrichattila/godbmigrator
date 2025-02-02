@@ -12,6 +12,10 @@ import (
 	"github.com/olbrichattila/godbmigrator/internal/helper"
 )
 
+const (
+	sqlFileExt = ".sql"
+)
+
 // Manager encapsulates the migration file management methods
 type Manager interface {
 	CreateNewMigrationFiles(migrationFilePath, customText string) error
@@ -80,7 +84,7 @@ func (*mFile) createNewMigrationFile(migrationFilePath, customText, datePart str
 
 func (m *mFile) ResolveRollbackFile(migrationFileName string) (string, error) {
 
-	lastIndex := strings.LastIndex(migrationFileName, ".sql")
+	lastIndex := strings.LastIndex(migrationFileName, sqlFileExt)
 	if lastIndex == -1 {
 		return "", fmt.Errorf("non sql file provided for rollback %s exists", migrationFileName)
 	}
@@ -101,8 +105,9 @@ func (m *mFile) OrderedMigrationFiles() ([]string, error) {
 
 	var fileNames []string
 	for _, file := range files {
-		if m.isMigration(file.Name()) {
-			fileNames = append(fileNames, file.Name())
+		fileName := file.Name()
+		if strings.HasSuffix(fileName, sqlFileExt) && m.isMigration(fileName) {
+			fileNames = append(fileNames, fileName)
 		}
 	}
 

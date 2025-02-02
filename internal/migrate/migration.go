@@ -14,10 +14,10 @@ import (
 
 // Migrator abstracts migration logic
 type Migrator interface {
-	Migrate(db *sql.DB, migrationProvider MigrationProvider, migrationFilePath string, count int) error
-	Rollback(db *sql.DB, migrationProvider MigrationProvider, migrationFilePath string, count int, isCompleteRollback bool) error
-	Report(db *sql.DB, migrationProvider MigrationProvider, migrationFilePath string) (string, error)
-	ChecksumValidation(db *sql.DB, migrationProvider MigrationProvider, migrationFilePath string) []string
+	Migrate(migrationProvider MigrationProvider, migrationFilePath string, count int) error
+	Rollback(migrationProvider MigrationProvider, migrationFilePath string, count int, isCompleteRollback bool) error
+	Report(migrationProvider MigrationProvider, migrationFilePath string) (string, error)
+	ChecksumValidation(migrationProvider MigrationProvider, migrationFilePath string) []string
 }
 
 type migration struct {
@@ -36,7 +36,6 @@ func New(db *sql.DB, migrationFileManager migrationfile.Manager) Migrator {
 }
 
 func (m *migration) Migrate(
-	db *sql.DB,
 	migrationProvider MigrationProvider,
 	migrationFilePath string,
 	count int,
@@ -73,7 +72,6 @@ func (m *migration) Migrate(
 }
 
 func (m *migration) Rollback(
-	db *sql.DB,
 	migrationProvider MigrationProvider,
 	migrationFilePath string,
 	count int,
@@ -113,7 +111,6 @@ func (m *migration) Rollback(
 }
 
 func (m *migration) Report(
-	db *sql.DB,
 	migrationProvider MigrationProvider,
 	migrationFilePath string,
 ) (string, error) {
@@ -124,7 +121,6 @@ func (m *migration) Report(
 }
 
 func (m *migration) ChecksumValidation(
-	db *sql.DB,
 	migrationProvider MigrationProvider,
 	migrationFilePath string,
 ) []string {
