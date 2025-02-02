@@ -35,20 +35,16 @@ func main() {
 	}
 	defer db.Close()
 
-	MigrationProvider, err := migrator.NewMigrationProvider(provider, "", db, createNewMigrationTables)
-	if err != nil {
-		panic(err.Error())
-	}
-
+	
 	switch function {
 	case "migrate":
-		err = migrator.Migrate(db, MigrationProvider, migrationFilePath, count)
+		err = migrator.Migrate(db, "", migrationFilePath, count)
 	case "rollback":
-		err = migrator.Rollback(db, MigrationProvider, migrationFilePath, count)
+		err = migrator.Rollback(db, "", migrationFilePath, count)
 	case "refresh":
-		err = migrator.Refresh(db, MigrationProvider, migrationFilePath)
+		err = migrator.Refresh(db, "", migrationFilePath)
 	case "report":
-		report, err := migrator.Report(db, MigrationProvider, migrationFilePath)
+		report, err := migrator.Report(db, "", migrationFilePath)
 		if err != nil {
 			panic("Error: " + err.Error())
 		}

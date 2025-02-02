@@ -25,8 +25,8 @@ func (suite *ReportDbTestSuite) TearDownTest() {
 	suite.db.Close()
 }
 
-func (t *ReportDbTestSuite) TestDBMigratorMigrateAllTables() {
-	migrationProvider, err := migrator.NewMigrationProvider("db", tablePrefix, t.db, true)
+func (t *ReportDbTestSuite) TestDBMigratorReportAllTables() {
+	_, err := migrator.Report(t.db, tablePrefix, testFixtureFolder)
 	t.Nil(err)
 
 	err = haveReportRecord(t.db, "FN1", "2006-01-01 00:00:00", "success", "ok")
@@ -35,7 +35,7 @@ func (t *ReportDbTestSuite) TestDBMigratorMigrateAllTables() {
 	err = haveReportRecord(t.db, "FN2", "2006-01-02 00:00:00", "error", "table not exists")
 	t.Nil(err)
 
-	report, err := migrationProvider.Report()
+	report, err := migrator.Report(t.db, tablePrefix, testFixtureFolder)
 	t.Nil(err)
 
 	expected := "Created at: 2006-01-01T00:00:00Z, File Name: FN1, Status: success, Message: ok\nCreated at: 2006-01-02T00:00:00Z, File Name: FN2, Status: error, Message: table not exists\n"

@@ -26,7 +26,7 @@ func (suite *baselineTestSuite) TearDownTest() {
 	suite.db.Close()
 }
 
-func (t *baselineTestSuite) TestDBMigratorMigrateAllTables() {
+func (t *baselineTestSuite) TestBaselineCreatedAndRestored() {
 	// Load and test if the correct number of tables, views, indexes and triggers are created
 	err := migrator.LoadBaseline(t.db, "./test_fixtures_baseliner")
 	t.NoError(err)
