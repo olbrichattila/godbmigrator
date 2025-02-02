@@ -129,6 +129,19 @@ fmt.Println(report)
 
 ---
 
+## Subscribing to Messages:
+
+You can subscribe to messages using a callback function. When a message is received, the callback ```func(int, string)``` will be invoked with the message type ID and an optional message text.
+
+### Example
+```
+migrator.SubscribeToMessages(func(et int, msg string) {
+		fmt.Println(et, msg)
+	})
+```
+
+---
+
 ### Available Make Targets
 You can use make commands for quick setup and testing:
 ```
