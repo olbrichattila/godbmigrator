@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"sort"
 	"time"
 
 	"github.com/olbrichattila/godbmigrator/internal/helper"
@@ -13,8 +14,8 @@ import (
 // Manager encapsulates the migration file management methods
 type Manager interface {
 	CreateNewMigrationFiles(migrationFilePath, customText string, isRollback bool) error
-	IsMigration(fileName string) bool
 	ResolveRollbackFile(migrationFileName string) (string, error)
+	OrderedMigrationFiles() ([]string, error)
 }
 
 const (
@@ -66,13 +67,6 @@ func (*mFile) CreateNewMigrationFiles(migrationFilePath, customText string, isRo
 	return nil
 }
 
-func (m *mFile) IsMigration(fileName string) bool {
-	regex := regexp.MustCompile(migrationFileRegex)
-	matches := regex.FindStringSubmatch(fileName)
-
-	return len(matches) > 0
-}
-
 func (m *mFile) ResolveRollbackFile(migrationFileName string) (string, error) {
 	regex := regexp.MustCompile(rollbackReplaceRegex)
 
@@ -88,4 +82,29 @@ func (m *mFile) ResolveRollbackFile(migrationFileName string) (string, error) {
 	}
 
 	return result, nil
+}
+
+func (m *mFile) OrderedMigrationFiles() ([]string, error) {
+	files, err := os.ReadDir(m.migrationFilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	var fileNames []string
+	for _, file := range files {
+		if m.isMigration(file.Name()) {
+			fileNames = append(fileNames, file.Name())
+		}
+	}
+
+	sort.Strings(fileNames)
+
+	return fileNames, nil
+}
+
+func (m *mFile) isMigration(fileName string) bool {
+	regex := regexp.MustCompile(migrationFileRegex)
+	matches := regex.FindStringSubmatch(fileName)
+
+	return len(matches) > 0
 }

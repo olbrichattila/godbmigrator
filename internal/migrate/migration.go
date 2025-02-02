@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"os"
-	"sort"
 
 	"github.com/olbrichattila/godbmigrator/internal/helper"
 	"github.com/olbrichattila/godbmigrator/internal/migrationfile"
@@ -44,9 +43,9 @@ func (m *migration) Migrate(
 ) error {
 	m.migrationFilePath = migrationFilePath
 	m.MigrationProvider = migrationProvider
-	m.MigrationProvider.SetJSONFilePath(migrationFilePath)
 	m.MigrationProvider.ResetDate()
-	fileNames, err := m.orderedMigrationFiles()
+
+	fileNames, err := m.migrationFileManager.OrderedMigrationFiles()
 	if err != nil {
 		return err
 	}
@@ -84,7 +83,6 @@ func (m *migration) Rollback(
 
 	m.migrationFilePath = migrationFilePath
 	m.MigrationProvider = migrationProvider
-	m.MigrationProvider.SetJSONFilePath(migrationFilePath)
 	migrations, err := m.MigrationProvider.Migrations(!isCompleteRollback)
 	if err != nil {
 		return err
@@ -121,7 +119,6 @@ func (m *migration) Report(
 ) (string, error) {
 	m.migrationFilePath = migrationFilePath
 	m.MigrationProvider = migrationProvider
-	m.MigrationProvider.SetJSONFilePath(migrationFilePath)
 
 	return m.MigrationProvider.Report()
 }
@@ -134,7 +131,6 @@ func (m *migration) ChecksumValidation(
 	errors := make([]string, 0)
 	m.migrationFilePath = migrationFilePath
 	m.MigrationProvider = migrationProvider
-	m.MigrationProvider.SetJSONFilePath(migrationFilePath)
 	migrations, err := m.MigrationProvider.Migrations(false)
 	if err != nil {
 		errors = append(errors, err.Error())
@@ -160,24 +156,6 @@ func (m *migration) ChecksumValidation(
 	}
 
 	return errors
-}
-
-func (m *migration) orderedMigrationFiles() ([]string, error) {
-	files, err := os.ReadDir(m.migrationFilePath)
-	if err != nil {
-		return nil, err
-	}
-
-	var fileNames []string
-	for _, file := range files {
-		if m.migrationFileManager.IsMigration(file.Name()) {
-			fileNames = append(fileNames, file.Name())
-		}
-	}
-
-	sort.Strings(fileNames)
-
-	return fileNames, nil
 }
 
 func (m *migration) executeSQLFile(fileName string) (bool, error) {

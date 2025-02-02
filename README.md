@@ -68,12 +68,7 @@ Parameters:
 
 ```
 migrationFilePath := "./migration"
-migrationProvider, err := migrator.NewMigrationProvider("json", "prefix", db, true)
-if err != nil {
-    panic("Error: " + err.Error())
-}
-
-err = migrator.Migrate(db, migrationProvider, migrationFilePath, count)
+err := migrator.Migrate(db, "prefix", migrationFilePath, count)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -82,12 +77,7 @@ if err != nil {
 ## Example rollback: (where the db is your *sql.DB)
 ```
 migrationFilePath := "./migration"
-migrationProvider, err := migrator.NewMigrationProvider("json", "prefix", nil, true)
-if err != nil {
-    panic("Error: " + err.Error())
-}
-
-err = migrator.Rollback(db, migrationProvider, migrationFilePath, count)
+err := migrator.Rollback(db, "prefix", migrationFilePath, count)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -97,12 +87,8 @@ if err != nil {
 Refresh is when everything rolled back and migrated from scratch
 ```
 migrationFilePath := "./migration"
-migrationProvider, err := migrator.NewMigrationProvider("json", "prefix", nil, true)
-if err != nil {
-    panic("Error: " + err.Error())
-}
 
-err = migrator.Refresh(db, migrationProvider, migrationFilePath)
+err = migrator.Refresh(db, "prefix", migrationFilePath)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -111,12 +97,7 @@ if err != nil {
 ## Migrate with database provider
 ```
 migrationFilePath := "./migration"
-migrationProvider, err := migrator.NewMigrationProvider("db", "prefix", db, true)
-if err != nil {
-    panic("Error: " + err.Error())
-}
-
-err = migrator.Migrate(db, migrationProvider, migrationFilePath, count)
+err =: migrator.Migrate(db, "prefix", migrationFilePath, count)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -125,12 +106,8 @@ if err != nil {
 ## Rollback with database provider
 ```
 migrationFilePath := "./migration"
-migrationProvider, err := migrator.NewMigrationProvider("db", "prefix", db, true)
-if err != nil {
-    panic("Error: " + err.Error())
-}
 
-err = migrator.Rollback(db, migrationProvider, migrationFilePath, count)
+err := migrator.Rollback(db, "prefix", migrationFilePath, count)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -140,12 +117,7 @@ if err != nil {
 Refresh is when everything rolled back and migrated from scratch
 ```
 migrationFilePath := "./migration"
-migrationProvider, err := migrator.NewMigrationProvider("db", "prefix", db)
-if err != nil {
-    panic("Error: " + err.Error())
-}
-
-err = migrator.Refresh(db, migrationProvider, migrationFilePath)
+err := migrator.Refresh(db, "prefix", migrationFilePath)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -163,27 +135,17 @@ if err != nil {
 ## Checksum Validator:
 You can validate whether any migration file has changed since it was applied.
 ```
-	migrationProvider, err := migrator.NewMigrationProvider("db", tablePrefix, t.db, true)
-	if err != nil {
-        panic("Error: " + err.Error())
-    }
-
-	err = migrator.Migrate(t.db, migrationProvider, testFixtureFolder, 3)
-	if err != nil {
-        panic("Error: " + err.Error())
-    }
-
-	errors := migrator.ChecksumValidation(t.db, migrationProvider, testChecksumFixtureFolder)
-	// 'errors' contains a list of error strings ([]string). If empty, there are no validation errors.
-```
-
-## Create a baseline of your existing database structure
-```
-migrationProvider, err := migrator.NewMigrationProvider("db", tablePrefix, t.db, false)
+err := migrator.Migrate(t.db, tablePrefix, testFixtureFolder, 3)
 if err != nil {
     panic("Error: " + err.Error())
 }
 
+errors := migrator.ChecksumValidation(t.db, tablePrefix, testChecksumFixtureFolder)
+// 'errors' contains a list of error strings ([]string). If empty, there are no validation errors.
+```
+
+## Create a baseline of your existing database structure
+```
 err := migrator.SaveBaseline(db, migrationFilePath)
 if err != nil {
     panic("Error: " + err.Error())
@@ -192,11 +154,6 @@ if err != nil {
 
 ## Restore baseline
 ```
-migrationProvider, err := migrator.NewMigrationProvider("db", tablePrefix, t.db, false)
-if err != nil {
-    panic("Error: " + err.Error())
-}
-
 err := migrator.LoadBaseline(db, migrationFilePath)
 if err != nil {
     panic("Error: " + err.Error())
@@ -209,12 +166,7 @@ Fetching the migration report to a readable string:
 
 ```
 migrationFilePath := "./migration"
-migrationProvider, err := migrator.NewMigrationProvider("db", "prefix", db, true)
-if err != nil {
-    panic("Error: " + err.Error())
-}
-
-report, err := migrator.Report(db, migrationProvider, migrationFilePath)
+report, err := migrator.Report(db, "prefix", migrationFilePath)
 if err != nil {
     panic("Error: " + err.Error())
 }

@@ -9,60 +9,67 @@ import (
 	"github.com/olbrichattila/godbmigrator/internal/migrationfile"
 )
 
-// NewMigrationProvider returns a new provider
-func NewMigrationProvider(providerType, tablePrefix string, db *sql.DB, createMigrationTables bool) (migrate.MigrationProvider, error) {
-	return migrate.NewProvider(providerType, tablePrefix, db, createMigrationTables)
-}
-
 // Rollback rolls back last migrated items or all if count is 0
 func Rollback(
 	db *sql.DB,
-	migrationProvider migrate.MigrationProvider,
+	tablePrefix string,
 	migrationFilePath string,
 	count int,
 ) error {
-	m := getMigrator(db, migrationFilePath)
+	m, provider, err := getMigrator(db, migrationFilePath, tablePrefix, true)
+	if err != nil {
+		return err
+	}
 
-	return m.Rollback(db, migrationProvider, migrationFilePath, count, false)
+	return m.Rollback(db, provider, migrationFilePath, count, false)
 }
 
 // Refresh runs a full rollback and migrate again
 func Refresh(
 	db *sql.DB,
-	migrationProvider migrate.MigrationProvider,
+	tablePrefix string,
 	migrationFilePath string,
 ) error {
-	m := getMigrator(db, migrationFilePath)
-
-	err := m.Rollback(db, migrationProvider, migrationFilePath, 0, true)
+	m, provider, err := getMigrator(db, migrationFilePath, tablePrefix, true)
 	if err != nil {
 		return err
 	}
 
-	return Migrate(db, migrationProvider, migrationFilePath, 0)
+	err = m.Rollback(db, provider, migrationFilePath, 0, true)
+	if err != nil {
+		return err
+	}
+
+	return m.Migrate(db, provider, migrationFilePath, 0)
 }
 
 // Migrate execute migrations
 func Migrate(
 	db *sql.DB,
-	migrationProvider migrate.MigrationProvider,
+	tablePrefix string,
 	migrationFilePath string,
 	count int,
 ) error {
-	m := getMigrator(db, migrationFilePath)
+	m, provider, err := getMigrator(db, migrationFilePath, tablePrefix, true)
+	if err != nil {
+		return err
+	}
 
-	return m.Migrate(db, migrationProvider, migrationFilePath, count)
+	return m.Migrate(db, provider, migrationFilePath, count)
 }
 
 // Report return a report of the already executed migrations
 func Report(
 	db *sql.DB,
-	migrationProvider migrate.MigrationProvider,
+	tablePrefix string,
 	migrationFilePath string,
 ) (string, error) {
-	m := getMigrator(db, migrationFilePath)
+	m, provider, err := getMigrator(db, migrationFilePath, tablePrefix, true)
+	if err != nil {
+		return "", err
+	}
 
-	return m.Report(db, migrationProvider, migrationFilePath)
+	return m.Report(db, provider, migrationFilePath)
 }
 
 // AddNewMigrationFiles adds a new blank migration file and a rollback file
@@ -73,6 +80,7 @@ func AddNewMigrationFiles(migrationFilePath, customText string) error {
 	if err != nil {
 		return err
 	}
+
 	err = mf.CreateNewMigrationFiles(migrationFilePath, customText, true)
 	if err != nil {
 		return err
@@ -84,12 +92,15 @@ func AddNewMigrationFiles(migrationFilePath, customText string) error {
 // ChecksumValidation validates if the checksums are correct and nothing changed
 func ChecksumValidation(
 	db *sql.DB,
-	migrationProvider migrate.MigrationProvider,
+	tablePrefix string,
 	migrationFilePath string,
 ) []string {
-	m := getMigrator(db, migrationFilePath)
+	m, provider, err := getMigrator(db, migrationFilePath, tablePrefix, true)
+	if err != nil {
+		return []string{err.Error()}
+	}
 
-	return m.ChecksumValidation(db, migrationProvider, migrationFilePath)
+	return m.ChecksumValidation(db, provider, migrationFilePath)
 }
 
 // SaveBaseline will save the current status of your database as baseline, which means the migration can start from this point
@@ -112,9 +123,17 @@ func LoadBaseline(
 	return b.Load(migrationFilePath)
 }
 
-func getMigrator(db *sql.DB, migrationFilePath string) migrate.Migrator {
-	return migrate.New(
+func getMigrator(db *sql.DB, migrationFilePath, tablePrefix string, createMigrationTables bool) (migrate.Migrator, migrate.MigrationProvider, error) {
+	provider, err := migrate.NewProvider(tablePrefix, db, createMigrationTables)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	migrator := migrate.New(
 		db,
 		migrationfile.New(migrationFilePath),
 	)
+
+	return migrator, provider, nil
 }
