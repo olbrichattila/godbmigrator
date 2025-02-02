@@ -23,18 +23,38 @@ type MigrationProvider interface {
 	SetJSONFilePath(string)
 	AddToMigrationReport(string, error) error
 	Report() (string, error)
+	CreateMigrationTables() error
 }
 
 // NewMigrationProvider returns a migration provider, which follows the provider type
 // The provider type can be json or db, error returned if the type incorrectly provided
 // db should be your database *sql.DB, which can be MySQL, Postgres, Sqlite or Firebird
-func NewMigrationProvider(providerType, tablePrefix string, db *sql.DB) (MigrationProvider, error) {
+func NewMigrationProvider(providerType, tablePrefix string, db *sql.DB, createMigrationTables bool) (MigrationProvider, error) {
+	var dbMigration MigrationProvider
+	var err error
 	switch providerType {
 	case "json":
-		return newJSONMigration()
+		dbMigration, err = newJSONMigration()
+		if err != nil {
+			return nil, err
+		}
 	case "db":
-		return newDbMigration(db, tablePrefix)
+		dbMigration, err = newDbMigration(db, tablePrefix)
+		if err != nil {
+			return nil, err
+		}
 	default:
 		return nil, fmt.Errorf("invalid migration provider type: %s", providerType)
 	}
+
+	if !createMigrationTables {
+		return dbMigration, nil	
+	}
+	
+	err = dbMigration.CreateMigrationTables()
+	if err != nil {
+		return nil, err
+	}
+
+	return dbMigration, nil
 }

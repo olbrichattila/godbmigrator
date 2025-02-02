@@ -8,6 +8,8 @@ import (
 	"flag"
 	"fmt"
 
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 	_ "github.com/nakagami/firebirdsql"
 	migrator "github.com/olbrichattila/godbmigrator"
@@ -16,6 +18,10 @@ import (
 func main() {
 	migrationFilePath := "./migrations"
 	dbType, provider, function, count, add := params()
+	createNewMigrationTables := true
+	if function == "baseline-load" {
+		createNewMigrationTables = false
+	}
 
 	fmt.Printf("Running with %s, %s, %s, %d %s\n", dbType, provider, function, count, add)
 
@@ -29,11 +35,7 @@ func main() {
 	}
 	defer db.Close()
 
-	MigrationProvider, err := migrator.NewMigrationProvider(provider, "", db)
-	if err != nil {
-		panic(err.Error())
-	}
-
+	MigrationProvider, err := migrator.NewMigrationProvider(provider, "", db, createNewMigrationTables)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -51,6 +53,16 @@ func main() {
 			panic("Error: " + err.Error())
 		}
 		fmt.Print(report)
+	case "baseline-save":
+		err := migrator.SaveBaseline(db, migrationFilePath)
+		if err != nil {
+			panic("Error: " + err.Error())
+		}
+	case "baseline-load":
+		err := migrator.LoadBaseline(db, migrationFilePath)
+		if err != nil {
+			panic("Error: " + err.Error())
+		}
 	default:
 		panic("Unknown function " + function)
 	}
@@ -62,7 +74,7 @@ func main() {
 
 func params() (string, string, string, int, string) {
 	db := flag.String("db", "sqlite", "Database driver name")
-	function := flag.String("function", "migrate", "function=migrate/rollback/report")
+	function := flag.String("function", "migrate", "function=migrate/rollback/report/baseline-save/baseline-load")
 	count := flag.Int("count", 0, "count=1")
 	provider := flag.String("provider", "db", "provider=db/json")
 	add := flag.String("add", "", "--add=filename")
@@ -78,13 +90,21 @@ func connectToFirebaseDatabase() (*sql.DB, error) {
 }
 
 func connectToPostresql() (*sql.DB, error) {
-	connectionString := "user=root password=root dbname=root sslmode=disable"
+	connectionString := "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
+	// connectionString := "postgres://postgres:postgres@localhost:5432/restored?sslmode=disable"
 
 	return sql.Open("postgres", connectionString)
 }
 
 func connectToSqLite() (*sql.DB, error) {
 	return sql.Open("sqlite3", "./data/data.db")
+}
+
+func connectToMySQL() (*sql.DB, error) {
+	connectionString := "migrator:H8E7kU8Y@tcp(127.0.0.1:3306)/migrator?charset=utf8mb4&parseTime=True&loc=Local"
+	// connectionString := "root:rootpassword@tcp(127.0.0.1:3306)/backup?charset=utf8mb4&parseTime=True&loc=Local"
+
+	return sql.Open("mysql", connectionString)
 }
 
 func getConnection(dbType string) (*sql.DB, error) {
@@ -94,12 +114,14 @@ func getConnection(dbType string) (*sql.DB, error) {
 	switch dbType {
 	case "sqlite":
 		conn, err = connectToSqLite()
-	case "firebase":
+	case "mysql":
+		conn, err = connectToMySQL()
+	case "firebird":
 		conn, err = connectToFirebaseDatabase()
 	case "postgresql":
 		conn, err = connectToPostresql()
 	default:
-		return nil, fmt.Errorf("invalid dbtype " + dbType)
+		return nil, fmt.Errorf("%s invalid database type ", dbType)
 	}
 
 	return conn, err

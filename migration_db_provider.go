@@ -3,17 +3,11 @@ package migrator
 import (
 	"database/sql"
 	"fmt"
-	"reflect"
 	"strconv"
 	"strings"
 	"time"
-)
 
-const (
-	dbTypeSqlite   = "sqlite"
-	dbTypePostgres = "pg"
-	dbTypeMySQL    = "mysql"
-	dbTypeFirebird = "firebird"
+	"github.com/olbrichattila/godbmigrator/internal/dbtypemanager"
 )
 
 type dbMigration struct {
@@ -33,7 +27,7 @@ type reportRow struct {
 // MigrationRow returns with migration file name, and Checksum calculated from the file content
 type MigrationRow struct {
 	Migration string
-	Checksum string
+	Checksum  string
 }
 
 func newDbMigration(db *sql.DB, tablePrefix string) (*dbMigration, error) {
@@ -47,21 +41,28 @@ func newDbMigration(db *sql.DB, tablePrefix string) (*dbMigration, error) {
 	}
 
 	dbMigration.ResetDate()
-	driverType, err := dbMigration.diverType()
+
+	return dbMigration, nil
+}
+
+// CreateMigrationTables creates the migration tables
+func (m *dbMigration) CreateMigrationTables() error {
+	driverType, err := dbtypemanager.GetDiverType(m.db)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	dbMigration.setSQLBindingParameter(driverType)
-	createSQLProvider, err := migrationTableProviderByDriverName(driverType, tablePrefix)
+	m.setSQLBindingParameter(driverType)
+	createSQLProvider, err := migrationTableProviderByDriverName(driverType, m.tablePrefix)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	err = dbMigration.init(createSQLProvider)
+	err = m.init(createSQLProvider)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return dbMigration, nil
+
+	return nil
 }
 
 func (m *dbMigration) ResetDate() {
@@ -94,7 +95,6 @@ func (m *dbMigration) Migrations(isLatest bool) ([]MigrationRow, error) {
 
 	defer rows.Close()
 
-	
 	var migration MigrationRow
 	for rows.Next() {
 		err := rows.Scan(&migration.Migration, &migration.Checksum)
@@ -103,8 +103,6 @@ func (m *dbMigration) Migrations(isLatest bool) ([]MigrationRow, error) {
 		}
 		migrationList = append(migrationList, migration)
 	}
-
-	
 
 	return migrationList, nil
 }
@@ -223,7 +221,7 @@ func (m *dbMigration) lastMigrationDate() (string, error) {
 }
 
 func (m *dbMigration) setSQLBindingParameter(driverType string) {
-	if driverType == dbTypePostgres {
+	if driverType == dbtypemanager.DbTypePostgres {
 		m.sqlBindingParameter = "$"
 
 		return
@@ -238,28 +236,6 @@ func (m *dbMigration) getBindingParameter(index int) string {
 	}
 
 	return fmt.Sprintf("$%d", index)
-}
-
-func (m *dbMigration) diverType() (string, error) {
-	driverType := reflect.TypeOf(m.db.Driver()).String()
-
-	if strings.Contains(driverType, "mysql") {
-		return dbTypeMySQL, nil
-	}
-
-	if strings.Contains(driverType, "pq") || strings.Contains(driverType, "postgres") {
-		return dbTypePostgres, nil
-	}
-
-	if strings.Contains(driverType, "sqlite") {
-		return dbTypeSqlite, nil
-	}
-
-	if strings.Contains(driverType, "firebirdsql") {
-		return dbTypeFirebird, nil
-	}
-
-	return "", fmt.Errorf("the driver used %s does not match any known dirver by the application", driverType)
 }
 
 func (m *dbMigration) GetJSONFileName() string {

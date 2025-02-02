@@ -32,11 +32,11 @@ func (t *ReportTestSuite) TestDBMigratorMigrateAllTables() {
 	err := copyFile(reportSourceFixture, reportDestinationFixture)
 	t.Nil(err)
 
-	MigrationProvider, err := migrator.NewMigrationProvider("json", tablePrefix, t.db)
-	MigrationProvider.SetJSONFilePath(testFixtureFolder)
+	migrationProvider, err := migrator.NewMigrationProvider("json", tablePrefix, t.db, true)
+	migrationProvider.SetJSONFilePath(testFixtureFolder)
 	t.Nil(err)
 
-	report, err := MigrationProvider.Report()
+	report, err := migrationProvider.Report()
 	t.Nil(err)
 
 	expected := "Created at: 2024-05-27 14:12:31, File Name: 2023-07-27_17_57_47-migrate-fixture.sql, Status: success, Message: ok\nCreated at: 2024-05-27 14:12:31, File Name: 2023-07-27_17_57_50-migrate-fixture.sql, Status: success, Message: ok\n"
