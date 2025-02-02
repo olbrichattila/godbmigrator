@@ -9,6 +9,7 @@ import (
 	"os"
 	"sort"
 
+	"github.com/olbrichattila/godbmigrator/internal/helper"
 	"github.com/olbrichattila/godbmigrator/internal/migrationfile"
 )
 
@@ -142,12 +143,12 @@ func (m *migration) ChecksumValidation(
 
 	for _, mig := range migrations {
 		filePath := m.migrationFilePath + "/" + mig.Migration
-		if !fileExists(filePath) {
+		if !helper.FileExists(filePath) {
 			errors = append(errors, fmt.Sprintf("migration file for checksum does not %s exists", mig.Migration))
 			continue
 		}
 
-		md5, err := calculateFileMD5(m.migrationFilePath + "/" + mig.Migration)
+		md5, err := helper.CalculateFileMD5(m.migrationFilePath + "/" + mig.Migration)
 		if err != nil {
 			errors = append(errors, fmt.Sprintf("migration file for checksum could not be opened %s exists", mig.Migration))
 			continue

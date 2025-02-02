@@ -6,6 +6,8 @@ import (
 	"os"
 	"regexp"
 	"time"
+
+	"github.com/olbrichattila/godbmigrator/internal/helper"
 )
 
 // Manager encapsulates the migration file management methods
@@ -81,14 +83,9 @@ func (m *mFile) ResolveRollbackFile(migrationFileName string) (string, error) {
 		return "unknown"
 	})
 
-	if !m.fileExists(m.migrationFilePath + "/" + result) {
+	if !helper.FileExists(m.migrationFilePath + "/" + result) {
 		return "", fmt.Errorf("file does not %s exists", result)
 	}
 
 	return result, nil
-}
-
-func (m *mFile) fileExists(filename string) bool {
-	_, err := os.Stat(filename)
-	return !os.IsNotExist(err)
 }
