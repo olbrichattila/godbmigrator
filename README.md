@@ -1,50 +1,53 @@
-# Golang Database migrator
+# Golang Database Migrator
 
-This is a package, not to be used individually, but serves the purpose to add migration to your project.
-If you would like to use this as a command line tool, please use this package with the command line wrapper
-available here:
-
-The package is a lightweight installation, does not contain any driver.
+This package is designed to add database migration functionality to your project. It is not intended to be used independently.
+If you would like to use it as a command-line tool, please use it with the command-line wrapper available here:
 
 https://github.com/olbrichattila/godbmigrator_cmd
 
-Create migration SQL files into a folder
+This package is lightweight and does not include any database drivers.
+You can create migration SQL files in a designated folder.
 
-## Migration file structure
+---
 
-Follow the structure:
-[id]-migrate-[custom-content].sql
+## Migration File Structure
+Follow this naming convention for migration files:
+[date-time]-migrate-[custom-content].sql
 
-The files will be processed in ascending order, therefore it is important to create an id as follows:
-For example:
+Files will be processed in ascending order, so it's important to create a unique identifier, such as a timestamp.
+
+--- 
+
+### Example:
 ```
-0001-migrate.sql
-0001-rollback.sql
-0002-migrate.sql
-0002-rollback.sql
-0003-migrate.sql
-0003-rollback.sql
-0004-migrate.sql
-0004-rollback.sql
-0005-migrate-new.sql
-0005-rollback-new.sql
-0006-migrate-new.sql
-0006-rollback-new.sql
+2024-05-27_19_49_38-migrate.sql
+2024-05-27_19_49_38-rollback.sql
+2024-05-27_19_50_04-migrate.sql
+2024-05-27_19_50_04-rollback.sql
 ```
+This ensures that migrations are executed in the correct sequence.
 
-## Adding to your code.
+---
 
-Import the module:
+### Adding to Your Code
+#### Import the module:
 
-```migrator "github.com/olbrichattila/godbmigrator"```
+```
+migrator "github.com/olbrichattila/godbmigrator"
+```
+#### Requirements
+You need to have:
+- A database connection (*sql.DB)
+- Migration table prefix, or it can be empty string as well
 
-You need to have a DB connection, and a migration provider.
 
-## prefix is the database table prefix, if you set xyz, then it will create xyz_migration table for storing migrations
-Currently the command line utility supports only SqLite, the build in solution should work, but not tested with other databases
+### Table Prefix
+The prefix parameter sets a database table prefix. If you set it to xyz, the migration table will be named xyz_migration to store applied migrations.
 
-## Example migrate: (where the db is your *sql.DB)
+---
 
+### Migration Operations
+#### Example: Running Migrations
 ```
 migrationFilePath := "./migration"
 err := migrator.Migrate(db, "prefix", migrationFilePath, count)
@@ -52,8 +55,7 @@ if err != nil {
     panic("Error: " + err.Error())
 }
 ```
-
-## Example rollback: (where the db is your *sql.DB)
+#### Example: Rolling Back Migrations
 ```
 migrationFilePath := "./migration"
 err := migrator.Rollback(db, "prefix", migrationFilePath, count)
@@ -61,19 +63,16 @@ if err != nil {
     panic("Error: " + err.Error())
 }
 ```
-
-## Example refresh: (where the db is your *sql.DB)
-Refresh is when everything rolled back and migrated from scratch
+#### Example: Refreshing Migrations
+A refresh rolls back all migrations and applies them from scratch.
 ```
 migrationFilePath := "./migration"
-
-err = migrator.Refresh(db, "prefix", migrationFilePath)
+err := migrator.Refresh(db, "prefix", migrationFilePath)
 if err != nil {
     panic("Error: " + err.Error())
 }
 ```
-
-## Example, create new migration file:
+#### Example: Creating a New Migration File
 ```
 migrationFilePath := "./migration"
 err := migrator.AddNewMigrationFiles(migrationFilePath, "custom-text-or-empty")
@@ -82,27 +81,30 @@ if err != nil {
 }
 ```
 
-## Checksum Validator:
+---
+
+### Checksum Validator
 You can validate whether any migration file has changed since it was applied.
 ```
-err := migrator.Migrate(t.db, tablePrefix, testFixtureFolder, 3)
+err := migrator.Migrate(db, tablePrefix, testFixtureFolder, 3)
 if err != nil {
     panic("Error: " + err.Error())
 }
 
-errors := migrator.ChecksumValidation(t.db, tablePrefix, testChecksumFixtureFolder)
+errors := migrator.ChecksumValidation(db, tablePrefix, testChecksumFixtureFolder)
 // 'errors' contains a list of error strings ([]string). If empty, there are no validation errors.
 ```
 
-## Create a baseline of your existing database structure
+---
+### Baseline Operations
+#### Create a Baseline of Your Existing Database Structure
 ```
 err := migrator.SaveBaseline(db, migrationFilePath)
 if err != nil {
     panic("Error: " + err.Error())
 }
 ```
-
-## Restore baseline
+#### Restore Baseline
 ```
 err := migrator.LoadBaseline(db, migrationFilePath)
 if err != nil {
@@ -110,10 +112,11 @@ if err != nil {
 }
 ```
 
-## Migration report
-The application stores a migration audit report, where you can track rollback, migrations, errors thrown during migration.
-Fetching the migration report to a readable string:
+---
 
+### Migration Report
+The application stores a migration audit report, where you can track applied migrations, rollbacks, and any errors encountered during migration.
+#### Fetching the migration report as a readable string:
 ```
 migrationFilePath := "./migration"
 report, err := migrator.Report(db, "prefix", migrationFilePath)
@@ -124,19 +127,22 @@ if err != nil {
 fmt.Println(report)
 ```
 
-## Available make targets:
+---
+
+### Available Make Targets
+You can use make commands for quick setup and testing:
 ```
 make run
 make install
 make run-test
 ```
 
-## Currently supported database drivers:
-
-- SqLite
-- MySql
-- PostgresQl
-- Firebird / Interbase (except baseline)
+---
+### Supported Database Drivers
+- SQLite
+- MySQL
+- PostgreSQL
+- Firebird / InterBase (except for baseline operations)
 
 ## About me:
 - Learn more about me on my personal website. https://attilaolbrich.co.uk/menu/my-story
