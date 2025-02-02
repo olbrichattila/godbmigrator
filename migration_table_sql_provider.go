@@ -1,6 +1,10 @@
 package migrator
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/olbrichattila/godbmigrator/internal/dbtypemanager"
+)
 
 const (
 	defaultTablePrefix                   = "olb"
@@ -25,13 +29,13 @@ type migrationTableSQLProvider interface {
 
 func migrationTableProviderByDriverName(driverName, tablePrefix string) (migrationTableSQLProvider, error) {
 	switch driverName {
-	case dbTypeSqlite:
+	case dbtypemanager.DbTypeSqlite:
 		return &sqliteMigrationTableSQLProvider{tablePrefix: tablePrefix}, nil
-	case dbTypePostgres:
+	case dbtypemanager.DbTypePostgres:
 		return &postgresMigrationTableSQLProvider{tablePrefix: tablePrefix}, nil
-	case dbTypeMySQL:
+	case dbtypemanager.DbTypeMySQL:
 		return &mySQLMigrationTableSQLProvider{tablePrefix: tablePrefix}, nil
-	case dbTypeFirebird:
+	case dbtypemanager.DbTypeFirebird:
 		return &firebirdMigrationTableSQLProvider{tablePrefix: tablePrefix}, nil
 	default:
 		return nil, fmt.Errorf("provider %s does not exists", driverName)

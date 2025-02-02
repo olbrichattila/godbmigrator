@@ -11,7 +11,9 @@ import (
 )
 
 const (
-	typeRollback = "rollback"
+	typeRollback         = "rollback"
+	migrationFileRegex   = "^.*migrate.*\\.sql$"
+	rollbackReplaceRegex = "migrate"
 )
 
 type migration struct {
@@ -19,11 +21,6 @@ type migration struct {
 	MigrationProvider MigrationProvider
 	migrationFilePath string
 }
-
-const (
-	migrationFileRegex   = "^.*migrate.*\\.sql$"
-	rollbackReplaceRegex = "migrate"
-)
 
 func newMigrator(db *sql.DB) *migration {
 	return &migration{db: db}
@@ -130,10 +127,9 @@ func (m *migration) executeSQL(sql string) error {
 
 func (m *migration) isMigration(fileName string) bool {
 	regex := regexp.MustCompile(migrationFileRegex)
+	matches := regex.FindStringSubmatch(fileName)
 
-	mathces := regex.FindStringSubmatch(fileName)
-
-	return len(mathces) > 0
+	return len(matches) > 0
 }
 
 func (m *migration) resolveRollbackFile(migrationFileName string) (string, error) {

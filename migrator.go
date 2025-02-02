@@ -10,7 +10,7 @@ import (
 	"os"
 	"time"
 
-	baseliner "github.com/olbrichattila/godbmigrator/internal"
+	"github.com/olbrichattila/godbmigrator/internal/baseliner"
 )
 
 // Rollback rolls back last migrated items or all if count is 0
@@ -143,21 +143,23 @@ func ChecksumValidation(
 	return errors
 }
 
+// SaveBaseline will save the current status of your database as baseline, which means the migration can start from this point
 func SaveBaseline(
 	db *sql.DB,
 	migrationFilePath string,
 ) error {
 	b := baseliner.New(db)
-	
+
 	return b.Save(migrationFilePath)
 }
 
+// LoadBaseline loads the backed up baseline schema to the database
 func LoadBaseline(
 	db *sql.DB,
 	migrationFilePath string,
 ) error {
 	b := baseliner.New(db)
-	
+
 	return b.Load(migrationFilePath)
 }
 
@@ -249,6 +251,6 @@ func calculateFileMD5(filePath string) (string, error) {
 	if _, err := io.Copy(hash, file); err != nil {
 		return "", fmt.Errorf("failed to calculate hash: %w", err)
 	}
-	
+
 	return hex.EncodeToString(hash.Sum(nil)), nil
 }
