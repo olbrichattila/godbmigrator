@@ -27,6 +27,7 @@ func (suite *baselineTestSuite) TearDownTest() {
 }
 
 func (t *baselineTestSuite) TestDBMigratorMigrateAllTables() {
+	// Load and test if the correct number of tables, views, indexes and triggers are created
 	err := migrator.LoadBaseline(t.db, "./test_fixtures_baseliner")
 	t.NoError(err)
 
@@ -46,6 +47,7 @@ func (t *baselineTestSuite) TestDBMigratorMigrateAllTables() {
 	t.NoError(err)
 	t.Equal(1, triggerCount)
 
+	// Save it back and test if the saved file is not empty
 	err = migrator.SaveBaseline(t.db, ".")
 	t.NoError(err)
 
