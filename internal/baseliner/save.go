@@ -18,8 +18,8 @@ func (b *baselilner) Save(migrationFilePath string) error {
 	file, err := os.Create(filename)
 	if err != nil {
 		return fmt.Errorf("error opening file: %v", err)
-
 	}
+
 	defer file.Close()
 
 	err = b.GetSchemaData(func(schemaDef string, useDelimiter bool) error {

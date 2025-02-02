@@ -14,9 +14,9 @@ const migrationJSONFileName = "./migrations/migrations.json"
 const migrationJSONReportFileName = "./migrations/migration_report.json"
 
 type jsonMigration struct {
-	data              map[string]MigrationRow
-	timeString        string
-	jsonFileName      string
+	data               map[string]MigrationRow
+	timeString         string
+	jsonFileName       string
 	jsonReportFileName string
 }
 
@@ -30,7 +30,6 @@ type jsonMigrationReport struct {
 func newJSONMigration() (*jsonMigration, error) {
 	jsonMigration := &jsonMigration{}
 	jsonMigration.ResetDate()
-	
 
 	return jsonMigration, nil
 }
@@ -81,7 +80,6 @@ func (m *jsonMigration) Migrations(isLatest bool) ([]MigrationRow, error) {
 
 	return filtered, nil
 }
-
 
 func (m *jsonMigration) saveMigrationFile() error {
 	jsonData, err := json.Marshal(&m.data)
