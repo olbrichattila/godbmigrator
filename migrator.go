@@ -9,6 +9,8 @@ import (
 	"io"
 	"os"
 	"time"
+
+	baseliner "github.com/olbrichattila/godbmigrator/internal"
 )
 
 // Rollback rolls back last migrated items or all if count is 0
@@ -145,24 +147,18 @@ func SaveBaseline(
 	db *sql.DB,
 	migrationFilePath string,
 ) error {
-	baseliner, err := GetBaseliner(db)
-	if err != nil {
-		return err
-	}
-
-	return baseliner.Save(migrationFilePath)
+	b := baseliner.New(db)
+	
+	return b.Save(migrationFilePath)
 }
 
 func LoadBaseline(
 	db *sql.DB,
 	migrationFilePath string,
 ) error {
-	baseliner, err := GetBaseliner(db)
-	if err != nil {
-		return err
-	}
-
-	return baseliner.Load(migrationFilePath)
+	b := baseliner.New(db)
+	
+	return b.Load(migrationFilePath)
 }
 
 func rollback(
