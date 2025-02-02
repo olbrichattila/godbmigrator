@@ -15,11 +15,10 @@ type Manager interface {
 	ResolveRollbackFile(migrationFileName string) (string, error)
 }
 
-// Migration file related constants
 const (
-	TypeRollback         = "rollback"
-	MigrationFileRegex   = "^.*migrate.*\\.sql$"
-	RollbackReplaceRegex = "migrate"
+	typeRollback         = "rollback"
+	migrationFileRegex   = "^.*migrate.*\\.sql$"
+	rollbackReplaceRegex = "migrate"
 )
 
 // New returns with a new file manager instance
@@ -43,7 +42,7 @@ func (*mFile) CreateNewMigrationFiles(migrationFilePath, customText string, isRo
 	}
 
 	if isRollback {
-		mgType = TypeRollback
+		mgType = typeRollback
 	}
 
 	fileName := fmt.Sprintf(
@@ -66,18 +65,18 @@ func (*mFile) CreateNewMigrationFiles(migrationFilePath, customText string, isRo
 }
 
 func (m *mFile) IsMigration(fileName string) bool {
-	regex := regexp.MustCompile(MigrationFileRegex)
+	regex := regexp.MustCompile(migrationFileRegex)
 	matches := regex.FindStringSubmatch(fileName)
 
 	return len(matches) > 0
 }
 
 func (m *mFile) ResolveRollbackFile(migrationFileName string) (string, error) {
-	regex := regexp.MustCompile(RollbackReplaceRegex)
+	regex := regexp.MustCompile(rollbackReplaceRegex)
 
 	result := regex.ReplaceAllStringFunc(migrationFileName, func(match string) string {
-		if match == RollbackReplaceRegex {
-			return TypeRollback
+		if match == rollbackReplaceRegex {
+			return typeRollback
 		}
 		return "unknown"
 	})
