@@ -1,4 +1,4 @@
-package migrator
+package migrate
 
 import (
 	"encoding/json"
@@ -8,6 +8,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/olbrichattila/godbmigrator/internal/helper"
 )
 
 const migrationJSONFileName = "./migrations/migrations.json"
@@ -37,7 +39,7 @@ func newJSONMigration() (*jsonMigration, error) {
 func (m *jsonMigration) CreateMigrationTables() error {
 	m.data = make(map[string]MigrationRow)
 	jsonFileName := m.GetJSONFileName()
-	if !fileExists(jsonFileName) {
+	if !helper.FileExists(jsonFileName) {
 		return nil
 	}
 
