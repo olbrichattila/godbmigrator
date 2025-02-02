@@ -8,17 +8,7 @@ The package is a lightweight installation, does not contain any driver.
 
 https://github.com/olbrichattila/godbmigrator_cmd
 
-## Create migration SQL files into a folderfmysql
-
-## What is the provider?
-
-Currently it supports two type of migration provider, json and database.
-This is the way the migrator knows which migration was executed and when.
-
-If the json provider is used, then a json file will be saved next to the migration files:
-```./migrations/migrations.json```
-
-If the db provider is user, then a migrations table will be created in the same database where you are migrating to.
+Create migration SQL files into a folder
 
 ## Migration file structure
 
@@ -50,21 +40,10 @@ Import the module:
 
 You need to have a DB connection, and a migration provider.
 
-The migration provider stores the migration status to:
-- json
-- database
-- (others to come)
-
 ## prefix is the database table prefix, if you set xyz, then it will create xyz_migration table for storing migrations
 Currently the command line utility supports only SqLite, the build in solution should work, but not tested with other databases
 
 ## Example migrate: (where the db is your *sql.DB)
-
-Parameters:
-- migration provider type "json", "database"
-- prefix of the migration tables: "mycompany" // This example sets the table prefix to mycompany, it can be an empty string as well.
-- if the migration type is db, then provide your *sql.DB
-- create migration tables on init: true/false. If it is set to true it will not create the migration tables. This feature is useful when you restore your baseline. 
 
 ```
 migrationFilePath := "./migration"
@@ -89,35 +68,6 @@ Refresh is when everything rolled back and migrated from scratch
 migrationFilePath := "./migration"
 
 err = migrator.Refresh(db, "prefix", migrationFilePath)
-if err != nil {
-    panic("Error: " + err.Error())
-}
-```
-
-## Migrate with database provider
-```
-migrationFilePath := "./migration"
-err =: migrator.Migrate(db, "prefix", migrationFilePath, count)
-if err != nil {
-    panic("Error: " + err.Error())
-}
-```
-
-## Rollback with database provider
-```
-migrationFilePath := "./migration"
-
-err := migrator.Rollback(db, "prefix", migrationFilePath, count)
-if err != nil {
-    panic("Error: " + err.Error())
-}
-```
-
-## Refresh with database provider
-Refresh is when everything rolled back and migrated from scratch
-```
-migrationFilePath := "./migration"
-err := migrator.Refresh(db, "prefix", migrationFilePath)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -186,12 +136,7 @@ make run-test
 - SqLite
 - MySql
 - PostgresQl
-- Firebird / Interbase
-
-## To be expected in next version
-
-- Store what was migrated as well even when migration error happened and rolled back
-- Report function, which can create a short report (migrations and rollback in order) or a large report with the queries migrator executed (or tried to execute)
+- Firebird / Interbase (except baseline)
 
 ## About me:
 - Learn more about me on my personal website. https://attilaolbrich.co.uk/menu/my-story
