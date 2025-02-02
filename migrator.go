@@ -75,13 +75,7 @@ func Report(
 // AddNewMigrationFiles adds a new blank migration file and a rollback file
 func AddNewMigrationFiles(migrationFilePath, customText string) error {
 	mf := migrationfile.New(migrationFilePath)
-	var err error
-	err = mf.CreateNewMigrationFiles(migrationFilePath, customText, false)
-	if err != nil {
-		return err
-	}
-
-	err = mf.CreateNewMigrationFiles(migrationFilePath, customText, true)
+	err := mf.CreateNewMigrationFiles(migrationFilePath, customText)
 	if err != nil {
 		return err
 	}

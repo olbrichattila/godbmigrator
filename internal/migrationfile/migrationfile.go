@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/olbrichattila/godbmigrator/internal/helper"
@@ -13,15 +14,15 @@ import (
 
 // Manager encapsulates the migration file management methods
 type Manager interface {
-	CreateNewMigrationFiles(migrationFilePath, customText string, isRollback bool) error
+	CreateNewMigrationFiles(migrationFilePath, customText string) error
 	ResolveRollbackFile(migrationFileName string) (string, error)
 	OrderedMigrationFiles() ([]string, error)
 }
 
 const (
-	typeRollback         = "rollback"
-	migrationFileRegex   = "^.*migrate.*\\.sql$"
-	rollbackReplaceRegex = "migrate"
+	typeRollback          = "rollback"
+	nonMigrationFileRegex = "^.*-rollback\\.sql$"
+	rollbackReplaceRegex  = "^.*\\.sql$"
 )
 
 // New returns with a new file manager instance
@@ -36,26 +37,36 @@ type mFile struct {
 }
 
 // CreateNewMigrationFiles responsible for creating migration files
-func (*mFile) CreateNewMigrationFiles(migrationFilePath, customText string, isRollback bool) error {
-	alteredCustomText := customText
-	mgType := "migrate"
+func (m *mFile) CreateNewMigrationFiles(migrationFilePath, customText string) error {
+	datePart := time.Now().Format("2006-01-02_15_04_05")
+	err := m.createNewMigrationFile(migrationFilePath, customText, datePart, false)
+	if err != nil {
+		return err
+	}
+
+	return m.createNewMigrationFile(migrationFilePath, customText, datePart, true)
+}
+
+func (*mFile) createNewMigrationFile(migrationFilePath, customText, datePart string, isRollback bool) error {
+	suffix := ""
+	prefix := ""
 
 	if customText != "" {
-		alteredCustomText = "-" + customText
+		prefix = "-" + customText
 	}
 
 	if isRollback {
-		mgType = typeRollback
+		suffix = "-" + typeRollback
 	}
 
-	fileName := fmt.Sprintf(
-		"%s-%s%s.sql",
-		time.Now().Format("2006-01-02_15_04_05"),
-		mgType,
-		alteredCustomText,
+	migrationfileName := fmt.Sprintf(
+		"%s%s%s.sql",
+		datePart,
+		prefix,
+		suffix,
 	)
 
-	filePath := migrationFilePath + "/" + fileName
+	filePath := migrationFilePath + "/" + migrationfileName
 	file, err := os.Create(filePath)
 	if err != nil {
 		return err
@@ -68,20 +79,18 @@ func (*mFile) CreateNewMigrationFiles(migrationFilePath, customText string, isRo
 }
 
 func (m *mFile) ResolveRollbackFile(migrationFileName string) (string, error) {
-	regex := regexp.MustCompile(rollbackReplaceRegex)
 
-	result := regex.ReplaceAllStringFunc(migrationFileName, func(match string) string {
-		if match == rollbackReplaceRegex {
-			return typeRollback
-		}
-		return "unknown"
-	})
-
-	if !helper.FileExists(m.migrationFilePath + "/" + result) {
-		return "", fmt.Errorf("file does not %s exists", result)
+	lastIndex := strings.LastIndex(migrationFileName, ".sql")
+	if lastIndex == -1 {
+		return "", fmt.Errorf("non sql file provided for rollback %s exists", migrationFileName)
 	}
 
-	return result, nil
+	rollbackFile := migrationFileName[:lastIndex] + "-rollback.sql"
+	if !helper.FileExists(m.migrationFilePath + "/" + rollbackFile) {
+		return "", fmt.Errorf("file does not %s exists", rollbackFile)
+	}
+
+	return rollbackFile, nil
 }
 
 func (m *mFile) OrderedMigrationFiles() ([]string, error) {
@@ -103,8 +112,11 @@ func (m *mFile) OrderedMigrationFiles() ([]string, error) {
 }
 
 func (m *mFile) isMigration(fileName string) bool {
-	regex := regexp.MustCompile(migrationFileRegex)
+	if fileName == "baseline.sql" {
+		return false
+	}
+	regex := regexp.MustCompile(nonMigrationFileRegex)
 	matches := regex.FindStringSubmatch(fileName)
 
-	return len(matches) > 0
+	return len(matches) == 0
 }
