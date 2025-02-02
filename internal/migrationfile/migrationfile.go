@@ -8,7 +8,8 @@ import (
 	"time"
 )
 
-type MigrationFileManager interface {
+// Manager encapsulates the migration file management methods
+type Manager interface {
 	CreateNewMigrationFiles(migrationFilePath, customText string, isRollback bool) error
 	IsMigration(fileName string) bool
 	ResolveRollbackFile(migrationFileName string) (string, error)
@@ -21,7 +22,8 @@ const (
 	RollbackReplaceRegex = "migrate"
 )
 
-func New(migrationFilePath string) MigrationFileManager {
+// New returns with a new file manager instance
+func New(migrationFilePath string) Manager {
 	return &mFile{
 		migrationFilePath: migrationFilePath,
 	}

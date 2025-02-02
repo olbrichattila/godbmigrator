@@ -12,14 +12,23 @@ import (
 	"github.com/olbrichattila/godbmigrator/internal/migrationfile"
 )
 
+// Migrator abstracts migration logic
+type Migrator interface {
+	Migrate(db *sql.DB, migrationProvider MigrationProvider, migrationFilePath string, count int) error
+	Rollback(db *sql.DB, migrationProvider MigrationProvider, migrationFilePath string, count int, isCompleteRollback bool) error
+	Report(db *sql.DB, migrationProvider MigrationProvider, migrationFilePath string) (string, error)
+	ChecksumValidation(db *sql.DB, migrationProvider MigrationProvider, migrationFilePath string) []string
+}
+
 type migration struct {
 	db                   *sql.DB
 	MigrationProvider    MigrationProvider
 	migrationFilePath    string
-	migrationFileManager migrationfile.MigrationFileManager
+	migrationFileManager migrationfile.Manager
 }
 
-func New(db *sql.DB, migrationFileManager migrationfile.MigrationFileManager) *migration {
+// New creates a new migration
+func New(db *sql.DB, migrationFileManager migrationfile.Manager) Migrator {
 	return &migration{
 		db:                   db,
 		migrationFileManager: migrationFileManager,

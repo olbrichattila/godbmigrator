@@ -9,6 +9,7 @@ import (
 	"github.com/olbrichattila/godbmigrator/internal/migrationfile"
 )
 
+// NewMigrationProvider returns a new provider
 func NewMigrationProvider(providerType, tablePrefix string, db *sql.DB, createMigrationTables bool) (migrate.MigrationProvider, error) {
 	return migrate.NewProvider(providerType, tablePrefix, db, createMigrationTables)
 }
@@ -20,8 +21,8 @@ func Rollback(
 	migrationFilePath string,
 	count int,
 ) error {
-	mm := migrationfile.New(migrationFilePath)
-	m := migrate.New(db, mm)
+	m := getMigrator(db, migrationFilePath)
+
 	return m.Rollback(db, migrationProvider, migrationFilePath, count, false)
 }
 
@@ -31,8 +32,8 @@ func Refresh(
 	migrationProvider migrate.MigrationProvider,
 	migrationFilePath string,
 ) error {
-	mm := migrationfile.New(migrationFilePath)
-	m := migrate.New(db, mm)
+	m := getMigrator(db, migrationFilePath)
+
 	err := m.Rollback(db, migrationProvider, migrationFilePath, 0, true)
 	if err != nil {
 		return err
@@ -48,8 +49,8 @@ func Migrate(
 	migrationFilePath string,
 	count int,
 ) error {
-	mm := migrationfile.New(migrationFilePath)
-	m := migrate.New(db, mm)
+	m := getMigrator(db, migrationFilePath)
+
 	return m.Migrate(db, migrationProvider, migrationFilePath, count)
 }
 
@@ -59,8 +60,8 @@ func Report(
 	migrationProvider migrate.MigrationProvider,
 	migrationFilePath string,
 ) (string, error) {
-	mm := migrationfile.New(migrationFilePath)
-	m := migrate.New(db, mm)
+	m := getMigrator(db, migrationFilePath)
+
 	return m.Report(db, migrationProvider, migrationFilePath)
 }
 
@@ -86,8 +87,8 @@ func ChecksumValidation(
 	migrationProvider migrate.MigrationProvider,
 	migrationFilePath string,
 ) []string {
-	mm := migrationfile.New(migrationFilePath)
-	m := migrate.New(db, mm)
+	m := getMigrator(db, migrationFilePath)
+
 	return m.ChecksumValidation(db, migrationProvider, migrationFilePath)
 }
 
@@ -109,4 +110,11 @@ func LoadBaseline(
 	b := baseliner.New(db)
 
 	return b.Load(migrationFilePath)
+}
+
+func getMigrator(db *sql.DB, migrationFilePath string) migrate.Migrator {
+	return migrate.New(
+		db,
+		migrationfile.New(migrationFilePath),
+	)
 }
