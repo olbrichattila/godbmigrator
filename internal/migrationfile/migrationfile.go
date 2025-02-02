@@ -18,7 +18,7 @@ const (
 
 // Manager encapsulates the migration file management methods
 type Manager interface {
-	CreateNewMigrationFiles(migrationFilePath, customText string) error
+	CreateNewMigrationFiles(migrationFilePath, customText string) ([]string, error)
 	ResolveRollbackFile(migrationFileName string) (string, error)
 	OrderedMigrationFiles() ([]string, error)
 }
@@ -41,17 +41,23 @@ type mFile struct {
 }
 
 // CreateNewMigrationFiles responsible for creating migration files
-func (m *mFile) CreateNewMigrationFiles(migrationFilePath, customText string) error {
+func (m *mFile) CreateNewMigrationFiles(migrationFilePath, customText string) ([]string, error) {
 	datePart := time.Now().Format("2006-01-02_15_04_05")
-	err := m.createNewMigrationFile(migrationFilePath, customText, datePart, false)
+	file1, err := m.createNewMigrationFile(migrationFilePath, customText, datePart, false)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return m.createNewMigrationFile(migrationFilePath, customText, datePart, true)
+	file2, err := m.createNewMigrationFile(migrationFilePath, customText, datePart, true)
+	if err != nil {
+		return nil, err
+	}
+
+	return []string{file1, file2}, nil
+
 }
 
-func (*mFile) createNewMigrationFile(migrationFilePath, customText, datePart string, isRollback bool) error {
+func (*mFile) createNewMigrationFile(migrationFilePath, customText, datePart string, isRollback bool) (string, error) {
 	suffix := ""
 	prefix := ""
 
@@ -73,13 +79,11 @@ func (*mFile) createNewMigrationFile(migrationFilePath, customText, datePart str
 	filePath := migrationFilePath + "/" + migrationfileName
 	file, err := os.Create(filePath)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer file.Close()
 
-	fmt.Printf("Migration file %s created\n", filePath)
-
-	return nil
+	return filePath, nil
 }
 
 func (m *mFile) ResolveRollbackFile(migrationFileName string) (string, error) {

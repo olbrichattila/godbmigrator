@@ -7,7 +7,19 @@ import (
 	"github.com/olbrichattila/godbmigrator/internal/baseliner"
 	"github.com/olbrichattila/godbmigrator/internal/migrate"
 	"github.com/olbrichattila/godbmigrator/internal/migrationfile"
+	"github.com/olbrichattila/godbmigrator/messager"
 )
+
+var messDispatch messager.Messager
+
+// SubscribeToMessages receive messages from the migrator, events happening
+func SubscribeToMessages(callback messager.CallbackFunc) {
+	if messDispatch == nil {
+		messDispatch = messager.New()
+	}
+
+	messDispatch.Register(callback)
+}
 
 // Rollback rolls back last migrated items or all if count is 0
 func Rollback(
@@ -75,9 +87,15 @@ func Report(
 // AddNewMigrationFiles adds a new blank migration file and a rollback file
 func AddNewMigrationFiles(migrationFilePath, customText string) error {
 	mf := migrationfile.New(migrationFilePath)
-	err := mf.CreateNewMigrationFiles(migrationFilePath, customText)
+	files, err := mf.CreateNewMigrationFiles(migrationFilePath, customText)
 	if err != nil {
 		return err
+	}
+
+	for _, fileName := range files {
+		if messDispatch != nil {
+			messDispatch.Dispatch(messager.MigrationFileCreated, fileName)
+		}
 	}
 
 	return nil
@@ -127,6 +145,7 @@ func getMigrator(db *sql.DB, migrationFilePath, tablePrefix string, createMigrat
 	migrator := migrate.New(
 		db,
 		migrationfile.New(migrationFilePath),
+		messDispatch,
 	)
 
 	return migrator, provider, nil

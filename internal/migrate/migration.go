@@ -7,9 +7,11 @@ import (
 	"encoding/hex"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/olbrichattila/godbmigrator/internal/helper"
 	"github.com/olbrichattila/godbmigrator/internal/migrationfile"
+	"github.com/olbrichattila/godbmigrator/messager"
 )
 
 // Migrator abstracts migration logic
@@ -25,13 +27,15 @@ type migration struct {
 	migrationProvider    MigrationProvider
 	migrationFilePath    string
 	migrationFileManager migrationfile.Manager
+	msg                  messager.Messager
 }
 
 // New creates a new migration
-func New(db *sql.DB, migrationFileManager migrationfile.Manager) Migrator {
+func New(db *sql.DB, migrationFileManager migrationfile.Manager, msg messager.Messager) Migrator {
 	return &migration{
 		db:                   db,
 		migrationFileManager: migrationFileManager,
+		msg:                  msg,
 	}
 }
 
@@ -66,7 +70,7 @@ func (m *migration) Migrate(
 		}
 	}
 
-	fmt.Printf("Migrated %d items\n", migrateCount)
+	m.messageDispatch(messager.MigratedItems, strconv.Itoa(migrateCount))
 
 	return nil
 }
@@ -86,7 +90,7 @@ func (m *migration) Rollback(
 		return err
 	}
 	if len(migrations) == 0 {
-		fmt.Println("Nothing to rollback")
+		m.messageDispatch(messager.NothingToRollback, "")
 		return nil
 	}
 
@@ -105,7 +109,7 @@ func (m *migration) Rollback(
 		rollbackCount++
 	}
 
-	fmt.Printf("Rolled back %d items\n", rollbackCount)
+	m.messageDispatch(messager.RolledBack, strconv.Itoa(rollbackCount))
 
 	return nil
 }
@@ -164,7 +168,7 @@ func (m *migration) executeSQLFile(fileName string) (bool, error) {
 		return false, nil
 	}
 
-	fmt.Printf("Running migration '%s'\n", fileName)
+	m.messageDispatch(messager.RunningMigrations, fileName)
 	content, err := os.ReadFile(m.migrationFilePath + "/" + fileName)
 	if err != nil {
 		return false, err
@@ -188,7 +192,8 @@ func (m *migration) executeSQLFile(fileName string) (bool, error) {
 func (m *migration) executeRollbackSQLFile(fileName string) error {
 	rollbackFileName, err := m.migrationFileManager.ResolveRollbackFile(fileName)
 	if err != nil {
-		fmt.Printf("Skip rollback for %s as rollback file does not exists\n", fileName)
+		m.messageDispatch(messager.SkipRollback, fileName)
+
 		err := m.migrationProvider.RemoveFromMigration(fileName)
 		if err != nil {
 			return err
@@ -197,7 +202,8 @@ func (m *migration) executeRollbackSQLFile(fileName string) error {
 		return nil
 	}
 
-	fmt.Printf("Running rollback '%s'\n", rollbackFileName)
+	m.messageDispatch(messager.RunningRollback, rollbackFileName)
+
 	content, err := os.ReadFile(m.migrationFilePath + "/" + rollbackFileName)
 	if err != nil {
 		return err
@@ -238,4 +244,10 @@ func (m *migration) executeSQL(sql string) error {
 func (m *migration) getHash(sql string) string {
 	hash := md5.Sum([]byte(sql))
 	return hex.EncodeToString(hash[:])
+}
+
+func (m *migration) messageDispatch(eventType int, message string) {
+	if m.msg != nil {
+		m.msg.Dispatch(eventType, message)
+	}
 }

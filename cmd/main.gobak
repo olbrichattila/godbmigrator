@@ -16,6 +16,10 @@ import (
 )
 
 func main() {
+	migrator.SubscribeToMessages(func(et int, msg string) {
+		fmt.Println(et, msg)
+	})
+
 	migrationFilePath := "./migrations"
 	dbType, provider, function, count, add := params()
 
