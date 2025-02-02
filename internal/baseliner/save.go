@@ -1,60 +1,11 @@
-// Package baseliner saves and restores current database structure
 package baseliner
 
 import (
-	"bufio"
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 )
-
-const (
-	queryTypeTables        = "table"
-	queryTypeIndex         = "index" // SQLite specific
-	queryTypeViews         = "view"
-	queryTypeMaterialViews = "materialView"
-	queryTypeProcedures    = "procedure"
-	queryTypeFunctions     = "function"
-	queryTypeTriggers      = "trigger"
-
-	// SQL file Delimiters
-	openingDelimiter = "DELIMITER ;"
-	closingDelimiter = "DELIMITER ;;"
-)
-
-// New baseliner, which saves and restores database structure
-func New(db *sql.DB) Baseliner {
-	return &baselilner{
-		db: db,
-	}
-}
-
-// Baseliner implements Save and Load
-type Baseliner interface {
-	Save(migrationFilePath string) error
-	Load(migrationFilePath string) error
-}
-
-type retrievalInstruction struct {
-	query                string
-	fieldPosition        int
-	dbNameShouldBePassed bool
-}
-
-type baselineInstruction struct {
-	execute                []string
-	listerQueries          map[string]string
-	schemaRetrievalQueries map[string]retrievalInstruction
-	activeDatabaseSQL      string
-}
-
-type baselilner struct {
-	baselineInstruction baselineInstruction
-	db                  *sql.DB
-	databaseName        string
-}
 
 func (b *baselilner) Save(migrationFilePath string) error {
 	baselineInstruction, err := b.getEngineSpecificInstructions()
@@ -104,48 +55,6 @@ func (b *baselilner) Save(migrationFilePath string) error {
 
 }
 
-func (b *baselilner) Load(migrationFilePath string) error {
-	filename := migrationFilePath + "/baseline.sql"
-
-	file, err := os.Open(filename)
-	if err != nil {
-		return fmt.Errorf("file opening error %s Error:%v", filename, err)
-
-	}
-	defer file.Close()
-
-	var statementBuilder strings.Builder
-	scanner := bufio.NewScanner(file)
-	isDelimiterSeparation := false
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.HasPrefix(strings.TrimSpace(line), "--") || line == "" {
-			continue
-		}
-
-		if line == openingDelimiter {
-			isDelimiterSeparation = true
-			continue
-		}
-
-		if line != closingDelimiter {
-			statementBuilder.WriteString(line + "\n")
-		}
-
-		if b.detectStatementEnd(line, isDelimiterSeparation) {
-			query := statementBuilder.String()
-			statementBuilder.Reset()
-
-			_, err := b.db.Exec(query)
-			if err != nil {
-				return fmt.Errorf("SQL Execution Error: %v query: %s", err, query)
-			}
-		}
-	}
-
-	return scanner.Err()
-}
-
 func (*baselilner) detectStatementEnd(line string, isDelimiterSeparation bool) bool {
 	if isDelimiterSeparation {
 		return line == closingDelimiter
@@ -166,8 +75,6 @@ func (b *baselilner) GetSchemaData(callback func(string, bool) error) error {
 		if err != nil {
 			return err
 		}
-
-		fmt.Println(tables)
 
 		for _, tableName := range tables {
 			schemaSQL, err := b.getSchemaSQL(pType, tableName)
@@ -296,8 +203,4 @@ func (b *baselilner) getSchemaQueryByType(queryType string, name string) (string
 	}
 
 	return "", 0, fmt.Errorf("getSchemaQueryByType: query type %s not implemented", queryType)
-}
-
-func (b *baselilner) GetDb() *sql.DB {
-	return b.db
 }

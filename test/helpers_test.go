@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"database/sql"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -54,7 +55,6 @@ func getChecksumFromTable(db *sql.DB, fileName string) (string, error) {
 	return checksum, nil
 }
 
-
 func resetJsonFile() error {
 	return os.Remove(testFixtureFolder + "/migrations.json")
 }
@@ -96,6 +96,18 @@ func haveReportRecord(db *sql.DB, fileName, createdAt, status, message string) e
 	return err
 }
 
+func countInSqliteMasterForType(db *sql.DB, sqlType string) (int, error) {
+	query := "SELECT count(*) as cnt  FROM sqlite_master WHERE type = ?"
+
+	var count int
+	err := db.QueryRow(query, sqlType).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func calculateFileMD5(filePath string) (string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -107,6 +119,19 @@ func calculateFileMD5(filePath string) (string, error) {
 	if _, err := io.Copy(hash, file); err != nil {
 		return "", fmt.Errorf("failed to calculate hash: %w", err)
 	}
-	
+
 	return hex.EncodeToString(hash.Sum(nil)), nil
+}
+
+func getFileSize(filename string) (int64, error) {
+	fileInfo, err := os.Stat(filename)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return 0, errors.New("file does not exist")
+		}
+
+		return 0, err
+	}
+
+	return fileInfo.Size(), nil
 }
