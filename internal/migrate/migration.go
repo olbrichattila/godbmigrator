@@ -2,12 +2,14 @@
 package migrate
 
 import (
+	"bytes"
 	"crypto/md5"
 	"database/sql"
 	"encoding/hex"
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/olbrichattila/godbmigrator/internal/helper"
 	"github.com/olbrichattila/godbmigrator/internal/migrationfile"
@@ -223,6 +225,51 @@ func (m *migration) executeRollbackSQLFile(fileName string) error {
 }
 
 func (m *migration) executeSQL(sql string) error {
+	statements := m.splitSQLStatements(sql)
+	for _, singleSQL := range statements {
+		err := m.executeSingleSQL(singleSQL)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *migration) splitSQLStatements(sqlScript string) []string {
+	var statements []string
+	var currentStatement bytes.Buffer
+	inProcedure := false
+
+	lines := strings.Split(sqlScript, "\n")
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+
+		if strings.HasPrefix(strings.ToUpper(trimmed), "CREATE PROCEDURE") || strings.HasPrefix(strings.ToUpper(trimmed), "CREATE FUNCTION") {
+			inProcedure = true
+		}
+
+		currentStatement.WriteString(line + "\n")
+		if strings.HasSuffix(trimmed, ";") && !inProcedure {
+			statements = append(statements, currentStatement.String())
+			currentStatement.Reset()
+		}
+
+		if inProcedure && strings.HasPrefix(strings.ToUpper(trimmed), "END") && strings.HasSuffix(trimmed, ";") {
+			inProcedure = false
+			statements = append(statements, currentStatement.String())
+			currentStatement.Reset()
+		}
+	}
+
+	if currentStatement.Len() > 0 {
+		statements = append(statements, currentStatement.String())
+	}
+
+	return statements
+}
+
+func (m *migration) executeSingleSQL(sql string) error {
 	tx, err := m.db.Begin()
 	if err != nil {
 		return err
