@@ -227,9 +227,11 @@ func (m *migration) executeRollbackSQLFile(fileName string) error {
 func (m *migration) executeSQL(sql string) error {
 	statements := m.splitSQLStatements(sql)
 	for _, singleSQL := range statements {
-		err := m.executeSingleSQL(singleSQL)
-		if err != nil {
-			return err
+		if strings.TrimSpace(singleSQL) != "" {
+			err := m.executeSingleSQL(singleSQL)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
