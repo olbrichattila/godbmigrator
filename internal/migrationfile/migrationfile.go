@@ -121,9 +121,10 @@ func (m *mFile) OrderedMigrationFiles() ([]string, error) {
 }
 
 func (m *mFile) isMigration(fileName string) bool {
-	if fileName == "baseline.sql" {
+	if strings.Contains(strings.ToLower(fileName), strings.ToLower("baseline")) {
 		return false
 	}
+
 	regex := regexp.MustCompile(nonMigrationFileRegex)
 	matches := regex.FindStringSubmatch(fileName)
 

@@ -242,12 +242,21 @@ func (m *migration) splitSQLStatements(sqlScript string) []string {
 	var statements []string
 	var currentStatement bytes.Buffer
 	inProcedure := false
+	inStatement := false
 
 	lines := strings.Split(sqlScript, "\n")
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
+		if !inStatement {
+			if strings.HasPrefix(trimmed, "-- ") || strings.HasPrefix(trimmed, "/*") {
+				continue
+			}
+		}
 
-		if strings.HasPrefix(strings.ToUpper(trimmed), "CREATE PROCEDURE") || strings.HasPrefix(strings.ToUpper(trimmed), "CREATE FUNCTION") {
+		inStatement = true
+		if strings.HasPrefix(strings.ToUpper(trimmed), "CREATE PROCEDURE") ||
+			strings.HasPrefix(strings.ToUpper(trimmed), "CREATE FUNCTION") ||
+			strings.HasPrefix(strings.ToUpper(trimmed), "CREATE TRIGGER") {
 			inProcedure = true
 		}
 
@@ -255,12 +264,14 @@ func (m *migration) splitSQLStatements(sqlScript string) []string {
 		if strings.HasSuffix(trimmed, ";") && !inProcedure {
 			statements = append(statements, currentStatement.String())
 			currentStatement.Reset()
+			inStatement = false
 		}
 
-		if inProcedure && strings.HasPrefix(strings.ToUpper(trimmed), "END") && strings.HasSuffix(trimmed, ";") {
+		if inProcedure && strings.HasSuffix(trimmed, "END;") {
 			inProcedure = false
 			statements = append(statements, currentStatement.String())
 			currentStatement.Reset()
+			inStatement = false
 		}
 	}
 
