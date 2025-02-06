@@ -195,12 +195,6 @@ func (m *migration) executeRollbackSQLFile(fileName string) error {
 	rollbackFileName, err := m.migrationFileManager.ResolveRollbackFile(fileName)
 	if err != nil {
 		m.messageDispatch(messager.SkipRollback, fileName)
-
-		err := m.migrationProvider.RemoveFromMigration(fileName)
-		if err != nil {
-			return err
-		}
-
 		return nil
 	}
 
