@@ -255,7 +255,9 @@ func (m *migration) splitSQLStatements(sqlScript string) []string {
 			isProcedureStarted = true
 		}
 
-		if isProcedureStarted && strings.HasPrefix(strings.ToUpper(trimmed), "BEGIN") {
+		if isProcedureStarted && (strings.HasPrefix(strings.ToUpper(trimmed), "BEGIN") ||
+			strings.HasSuffix(strings.ToUpper(trimmed), " BEGIN") ||
+			strings.HasSuffix(strings.ToUpper(trimmed), ":BEGIN")) {
 			inProcedure = true
 		}
 
