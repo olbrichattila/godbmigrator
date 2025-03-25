@@ -4,6 +4,7 @@ package migrator
 import (
 	"database/sql"
 
+	"github.com/olbrichattila/godbmigrator/config"
 	"github.com/olbrichattila/godbmigrator/internal/baseliner"
 	"github.com/olbrichattila/godbmigrator/internal/messager"
 	"github.com/olbrichattila/godbmigrator/internal/migrate"
@@ -106,7 +107,7 @@ func (d *dbmigrate) AddNewMigrationFiles(customText string) error {
 	}
 
 	for _, fileName := range files {
-		d.messDispatch.Dispatch(messager.MigrationFileCreated, fileName)
+		d.messDispatch.Dispatch(config.MigrationFileCreated, fileName)
 	}
 
 	return nil

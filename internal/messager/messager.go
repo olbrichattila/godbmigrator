@@ -1,17 +1,6 @@
 // Package messager receives a message and calls back a callback
 package messager
 
-// Message types
-const (
-	MigratedItems = iota
-	NothingToRollback
-	RolledBack
-	RunningMigrations
-	SkipRollback
-	RunningRollback
-	MigrationFileCreated
-)
-
 // CallbackFunc Function type
 type CallbackFunc func(int, string)
 

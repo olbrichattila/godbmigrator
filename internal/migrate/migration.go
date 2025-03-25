@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/olbrichattila/godbmigrator/config"
 	"github.com/olbrichattila/godbmigrator/internal/helper"
 	"github.com/olbrichattila/godbmigrator/internal/messager"
 	"github.com/olbrichattila/godbmigrator/internal/migrationfile"
@@ -72,7 +73,7 @@ func (m *migration) Migrate(
 		}
 	}
 
-	m.messageDispatch(messager.MigratedItems, strconv.Itoa(migrateCount))
+	m.messageDispatch(config.MigratedItems, strconv.Itoa(migrateCount))
 
 	return nil
 }
@@ -92,7 +93,7 @@ func (m *migration) Rollback(
 		return err
 	}
 	if len(migrations) == 0 {
-		m.messageDispatch(messager.NothingToRollback, "")
+		m.messageDispatch(config.NothingToRollback, "")
 		return nil
 	}
 
@@ -111,7 +112,7 @@ func (m *migration) Rollback(
 		rollbackCount++
 	}
 
-	m.messageDispatch(messager.RolledBack, strconv.Itoa(rollbackCount))
+	m.messageDispatch(config.RolledBack, strconv.Itoa(rollbackCount))
 
 	return nil
 }
@@ -170,7 +171,7 @@ func (m *migration) executeSQLFile(fileName string) (bool, error) {
 		return false, nil
 	}
 
-	m.messageDispatch(messager.RunningMigrations, fileName)
+	m.messageDispatch(config.RunningMigrations, fileName)
 	content, err := os.ReadFile(m.migrationFilePath + "/" + fileName)
 	if err != nil {
 		return false, err
@@ -194,11 +195,11 @@ func (m *migration) executeSQLFile(fileName string) (bool, error) {
 func (m *migration) executeRollbackSQLFile(fileName string) error {
 	rollbackFileName, err := m.migrationFileManager.ResolveRollbackFile(fileName)
 	if err != nil {
-		m.messageDispatch(messager.SkipRollback, fileName)
+		m.messageDispatch(config.SkipRollback, fileName)
 		return nil
 	}
 
-	m.messageDispatch(messager.RunningRollback, rollbackFileName)
+	m.messageDispatch(config.RunningRollback, rollbackFileName)
 
 	content, err := os.ReadFile(m.migrationFilePath + "/" + rollbackFileName)
 	if err != nil {
