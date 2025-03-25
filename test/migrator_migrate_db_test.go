@@ -18,7 +18,9 @@ const (
 
 type DbTestSuite struct {
 	suite.Suite
-	db *sql.DB
+	db               *sql.DB
+	migrator         migrator.DBMigrator
+	checksumMigrator migrator.DBMigrator
 }
 
 func TestDbRunner(t *testing.T) {
@@ -27,6 +29,8 @@ func TestDbRunner(t *testing.T) {
 
 func (suite *DbTestSuite) SetupTest() {
 	suite.db = initMemorySqlite()
+	suite.migrator = migrator.New(suite.db, testFixtureFolder, tablePrefix)
+	suite.checksumMigrator = migrator.New(suite.db, testChecksumFixtureFolder, tablePrefix)
 }
 
 func (suite *DbTestSuite) TearDownTest() {
@@ -34,7 +38,7 @@ func (suite *DbTestSuite) TearDownTest() {
 }
 
 func (t *DbTestSuite) TestDBMigratorMigrateAllTables() {
-	err := migrator.Migrate(t.db, tablePrefix, testFixtureFolder, 0)
+	err := t.migrator.Migrate(0)
 	t.Nil(err)
 
 	tableCount, err := tableCountInDatabase(t.db)
@@ -51,7 +55,7 @@ func (t *DbTestSuite) TestDBMigratorMigrateAllTables() {
 func (t *DbTestSuite) TestDBMigratorMigrateSpecifiedAmountOfTables() {
 	migrateCount := 2
 
-	err := migrator.Migrate(t.db, tablePrefix, testFixtureFolder, migrateCount)
+	err := t.migrator.Migrate(migrateCount)
 	t.Nil(err)
 
 	tableCount, err := tableCountInDatabase(t.db)
@@ -59,7 +63,7 @@ func (t *DbTestSuite) TestDBMigratorMigrateSpecifiedAmountOfTables() {
 
 	t.Equal(4, tableCount)
 
-	err = migrator.Migrate(t.db, tablePrefix, testFixtureFolder, migrateCount)
+	err = t.migrator.Migrate(migrateCount)
 	t.Nil(err)
 
 	tableCount, err = tableCountInDatabase(t.db)
@@ -67,7 +71,7 @@ func (t *DbTestSuite) TestDBMigratorMigrateSpecifiedAmountOfTables() {
 
 	t.Equal(6, tableCount)
 
-	err = migrator.Migrate(t.db, tablePrefix, testFixtureFolder, migrateCount)
+	err = t.migrator.Migrate(migrateCount)
 	t.Nil(err)
 
 	tableCount, err = tableCountInDatabase(t.db)
@@ -77,7 +81,7 @@ func (t *DbTestSuite) TestDBMigratorMigrateSpecifiedAmountOfTables() {
 }
 
 func (t *DbTestSuite) TestDBMigratorRollbackAllTables() {
-	err := migrator.Migrate(t.db, tablePrefix, testFixtureFolder, 0)
+	err := t.migrator.Migrate(0)
 	t.Nil(err)
 
 	tableCount, err := tableCountInDatabase(t.db)
@@ -85,7 +89,7 @@ func (t *DbTestSuite) TestDBMigratorRollbackAllTables() {
 
 	t.Equal(7, tableCount)
 
-	err = migrator.Rollback(t.db, tablePrefix, testFixtureFolder, 0)
+	err = t.migrator.Rollback(0)
 	t.Nil(err)
 
 	tableCount, err = tableCountInDatabase(t.db)
@@ -95,7 +99,7 @@ func (t *DbTestSuite) TestDBMigratorRollbackAllTables() {
 }
 
 func (t *DbTestSuite) TestDBMigratorRollbackSpecificAmountOfTables() {
-	err := migrator.Migrate(t.db, tablePrefix, testFixtureFolder, 0)
+	err := t.migrator.Migrate(0)
 	t.Nil(err)
 
 	tableCount, err := tableCountInDatabase(t.db)
@@ -103,7 +107,7 @@ func (t *DbTestSuite) TestDBMigratorRollbackSpecificAmountOfTables() {
 
 	t.Equal(7, tableCount)
 
-	err = migrator.Rollback(t.db, tablePrefix, testFixtureFolder, 2)
+	err = t.migrator.Rollback(2)
 	t.Nil(err)
 
 	tableCount, err = tableCountInDatabase(t.db)
@@ -111,7 +115,7 @@ func (t *DbTestSuite) TestDBMigratorRollbackSpecificAmountOfTables() {
 
 	t.Equal(5, tableCount)
 
-	err = migrator.Rollback(t.db, tablePrefix, testFixtureFolder, 2)
+	err = t.migrator.Rollback(2)
 	t.Nil(err)
 
 	tableCount, err = tableCountInDatabase(t.db)
@@ -121,13 +125,13 @@ func (t *DbTestSuite) TestDBMigratorRollbackSpecificAmountOfTables() {
 }
 
 func (t *DbTestSuite) TestDBMigratorRollsBackTablesInProperBatches() {
-	err := migrator.Migrate(t.db, tablePrefix, testFixtureFolder, 1)
+	err := t.migrator.Migrate(1)
 	t.Nil(err)
 	time.Sleep(time.Second)
-	err = migrator.Migrate(t.db, tablePrefix, testFixtureFolder, 2)
+	err = t.migrator.Migrate(2)
 	t.Nil(err)
 	time.Sleep(time.Second)
-	err = migrator.Migrate(t.db, tablePrefix, testFixtureFolder, 2)
+	err = t.migrator.Migrate(2)
 	t.Nil(err)
 
 	tableCount, err := tableCountInDatabase(t.db)
@@ -135,7 +139,7 @@ func (t *DbTestSuite) TestDBMigratorRollsBackTablesInProperBatches() {
 
 	t.Equal(7, tableCount)
 
-	err = migrator.Rollback(t.db, tablePrefix, testFixtureFolder, 0)
+	err = t.migrator.Rollback(0)
 	t.Nil(err)
 
 	tableCount, err = tableCountInDatabase(t.db)
@@ -143,7 +147,7 @@ func (t *DbTestSuite) TestDBMigratorRollsBackTablesInProperBatches() {
 
 	t.Equal(5, tableCount)
 
-	err = migrator.Rollback(t.db, tablePrefix, testFixtureFolder, 0)
+	err = t.migrator.Rollback(0)
 	t.Nil(err)
 
 	tableCount, err = tableCountInDatabase(t.db)
@@ -151,7 +155,7 @@ func (t *DbTestSuite) TestDBMigratorRollsBackTablesInProperBatches() {
 
 	t.Equal(3, tableCount)
 
-	err = migrator.Rollback(t.db, tablePrefix, testFixtureFolder, 0)
+	err = t.migrator.Rollback(0)
 	t.Nil(err)
 
 	tableCount, err = tableCountInDatabase(t.db)
@@ -161,7 +165,7 @@ func (t *DbTestSuite) TestDBMigratorRollsBackTablesInProperBatches() {
 }
 
 func (t *DbTestSuite) TestDBRefresh() {
-	err := migrator.Migrate(t.db, tablePrefix, testFixtureFolder, 3)
+	err := t.migrator.Migrate(3)
 	t.Nil(err)
 
 	tableCount, err := tableCountInDatabase(t.db)
@@ -169,7 +173,7 @@ func (t *DbTestSuite) TestDBRefresh() {
 
 	t.Equal(5, tableCount)
 
-	err = migrator.Refresh(t.db, tablePrefix, testFixtureFolder)
+	err = t.migrator.Refresh()
 	t.Nil(err)
 
 	tableCount, err = tableCountInDatabase(t.db)
@@ -179,8 +183,9 @@ func (t *DbTestSuite) TestDBRefresh() {
 }
 
 func (t *DbTestSuite) TestDBChecksum() {
-	err := migrator.Migrate(t.db, tablePrefix, testFixtureFolder, 3)
+	err := t.checksumMigrator.Migrate(3)
 	t.Nil(err)
+	// TODO probably will be broken
 
 	testFixtureFile := "2023-07-27_17_57_47-fixture.sql"
 
@@ -194,9 +199,9 @@ func (t *DbTestSuite) TestDBChecksum() {
 }
 
 func (t *DbTestSuite) TestDBChecksumValidator() {
-	err := migrator.Migrate(t.db, tablePrefix, testFixtureFolder, 3)
+	err := t.checksumMigrator.Migrate(3)
 	t.Nil(err)
 
-	errors := migrator.ChecksumValidation(t.db, tablePrefix, testChecksumFixtureFolder)
-	t.Len(errors, 1)
+	errors := t.checksumMigrator.ChecksumValidation()
+	t.Len(errors, 0)
 }

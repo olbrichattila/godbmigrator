@@ -47,5 +47,6 @@
 /test/data/
 test/test_fixtures/migrations.json
 test/test_fixtures/migration_reports.json
+test/test-fixture-baseliner-save/baseline.sql
 /cmd/test.go
 test/baseline.sql

@@ -13,6 +13,7 @@ const testMigrationFilePath = "./test-migrations"
 
 type AddTestSuite struct {
 	suite.Suite
+	migrator migrator.DBMigrator
 }
 
 func TestAddTestRunner(t *testing.T) {
@@ -21,10 +22,12 @@ func TestAddTestRunner(t *testing.T) {
 
 func (suite *AddTestSuite) SetupTest() {
 	resetTestMigrationPath()
+	db := initMemorySqlite()
+	suite.migrator = migrator.New(db, testMigrationFilePath, tablePrefix)
 }
 
 func (t *AddTestSuite) TestMigrationAdded() {
-	err := migrator.AddNewMigrationFiles(testMigrationFilePath, "")
+	err := t.migrator.AddNewMigrationFiles("")
 	t.Nil(err)
 
 	count, err := countFilesInDirectory(testMigrationFilePath)
@@ -36,7 +39,7 @@ func (t *AddTestSuite) TestMigrationAdded() {
 func (t *AddTestSuite) TestMigrationAddedWithCustomName() {
 	customText := "custom-text"
 
-	err := migrator.AddNewMigrationFiles(testMigrationFilePath, customText)
+	err := t.migrator.AddNewMigrationFiles(customText)
 	t.Nil(err)
 
 	count, err := countFilesInDirectory(testMigrationFilePath)

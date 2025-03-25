@@ -52,17 +52,13 @@ type reportRow struct {
 // NewProvider returns a migration provider, which follows the provider type
 // The provider type can be json or db, error returned if the type incorrectly provided
 // db should be your database *sql.DB, which can be MySQL, Postgres, Sqlite or Firebird
-func NewProvider(tablePrefix string, db *sql.DB, createMigrationTables bool) (MigrationProvider, error) {
+func NewProvider(tablePrefix string, db *sql.DB) (MigrationProvider, error) {
 	var dbMigration MigrationProvider
 	var err error
 
 	dbMigration, err = newDbMigration(db, tablePrefix)
 	if err != nil {
 		return nil, err
-	}
-
-	if !createMigrationTables {
-		return dbMigration, nil
 	}
 
 	err = dbMigration.CreateMigrationTables()
