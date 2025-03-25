@@ -12,8 +12,8 @@ import (
 	"strings"
 
 	"github.com/olbrichattila/godbmigrator/internal/helper"
+	"github.com/olbrichattila/godbmigrator/internal/messager"
 	"github.com/olbrichattila/godbmigrator/internal/migrationfile"
-	"github.com/olbrichattila/godbmigrator/messager"
 )
 
 // Migrator abstracts migration logic

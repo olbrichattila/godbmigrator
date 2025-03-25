@@ -5,9 +5,9 @@ import (
 	"database/sql"
 
 	"github.com/olbrichattila/godbmigrator/internal/baseliner"
+	"github.com/olbrichattila/godbmigrator/internal/messager"
 	"github.com/olbrichattila/godbmigrator/internal/migrate"
 	"github.com/olbrichattila/godbmigrator/internal/migrationfile"
-	"github.com/olbrichattila/godbmigrator/messager"
 )
 
 func New(
