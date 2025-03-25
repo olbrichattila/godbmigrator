@@ -50,7 +50,8 @@ The prefix parameter sets a database table prefix. If you set it to xyz, the mig
 #### Example: Running Migrations
 ```
 migrationFilePath := "./migration"
-err := migrator.Migrate(db, "prefix", migrationFilePath, count)
+m := migrator.New(db, "prefix", migrationFilePath)
+err := m.Migrate(count)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -58,7 +59,8 @@ if err != nil {
 #### Example: Rolling Back Migrations
 ```
 migrationFilePath := "./migration"
-err := migrator.Rollback(db, "prefix", migrationFilePath, count)
+m := migrator.New(db, "prefix", migrationFilePath)
+err := m.Rollback(count)
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -67,7 +69,8 @@ if err != nil {
 A refresh rolls back all migrations and applies them from scratch.
 ```
 migrationFilePath := "./migration"
-err := migrator.Refresh(db, "prefix", migrationFilePath)
+m := migrator.New(db, "prefix", migrationFilePath)
+err := m.Refresh()
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -75,7 +78,8 @@ if err != nil {
 #### Example: Creating a New Migration File
 ```
 migrationFilePath := "./migration"
-err := migrator.AddNewMigrationFiles(migrationFilePath, "custom-text-or-empty")
+m := migrator.New(db, "prefix", migrationFilePath)
+err := m.AddNewMigrationFiles("custom-text-or-empty")
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -86,12 +90,13 @@ if err != nil {
 ### Checksum Validator
 You can validate whether any migration file has changed since it was applied.
 ```
-err := migrator.Migrate(db, tablePrefix, testFixtureFolder, 3)
+m := migrator.New(db, "prefix", migrationFilePath)
+err := m.Migrate(3)
 if err != nil {
     panic("Error: " + err.Error())
 }
 
-errors := migrator.ChecksumValidation(db, tablePrefix, testChecksumFixtureFolder)
+errors := m.ChecksumValidation(db, tablePrefix, testChecksumFixtureFolder)
 // 'errors' contains a list of error strings ([]string). If empty, there are no validation errors.
 ```
 
@@ -99,14 +104,16 @@ errors := migrator.ChecksumValidation(db, tablePrefix, testChecksumFixtureFolder
 ### Baseline Operations
 #### Create a Baseline of Your Existing Database Structure
 ```
-err := migrator.SaveBaseline(db, migrationFilePath)
+m := migrator.New(db, "prefix", migrationFilePath)
+err := m.SaveBaseline()
 if err != nil {
     panic("Error: " + err.Error())
 }
 ```
 #### Restore Baseline
 ```
-err := migrator.LoadBaseline(db, migrationFilePath)
+m := migrator.New(db, "prefix", migrationFilePath)
+err := m.LoadBaseline()
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -119,7 +126,8 @@ The application stores a migration audit report, where you can track applied mig
 #### Fetching the migration report as a readable string:
 ```
 migrationFilePath := "./migration"
-report, err := migrator.Report(db, "prefix", migrationFilePath)
+m := migrator.New(db, "prefix", migrationFilePath)
+report, err := m.Report()
 if err != nil {
     panic("Error: " + err.Error())
 }
@@ -135,9 +143,10 @@ You can subscribe to messages using a callback function. When a message is recei
 
 ### Example
 ```
-migrator.SubscribeToMessages(func(et int, msg string) {
-		fmt.Println(et, msg)
-	})
+m := migrator.New(db, "prefix", migrationFilePath)
+m.SubscribeToMessages(func(et int, msg string) {
+    fmt.Println(et, msg)
+})
 ```
 
 ---
